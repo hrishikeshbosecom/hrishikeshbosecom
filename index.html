@@ -1,13 +1,148 @@
-<style>
-  body { font-family: sans-serif; display: grid; grid-template-columns: 200px 1fr 250px; gap: 20px; }
-  .box { border: 1px solid #ccc; padding: 10px; background: #f8f8f8; }
-  h3 { font-size: 14px; background: #eee; padding: 5px; margin: 0 0 10px 0; }
-  ul { list-style: none; padding: 0; font-size: 12px; }
-  li { margin-bottom: 5px; }
-  a { color: #0000EE; text-decoration: none; }
-  a:hover { text-decoration: underline; }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimalist Directory</title>
+    <style>
+        /* Base Styles - Craigslist Aesthetic */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.4;
+            margin: 20px auto;
+            max-width: 1200px;
+            color: #222;
+            background-color: #fff;
+        }
 
-<div class="box"><h3>community</h3><ul><li><a href="#">activities</a></li><li><a href="#">groups</a></li></ul></div>
-<div class="box"><h3>housing</h3><ul><li><a href="#">apartments</a></li><li><a href="#">office/commercial</a></li></ul></div>
-<div class="box"><h3>jobs</h3><ul><li><a href="#">software / qa / dba</a></li><li><a href="#">systems / network</a></li></ul></div>
+        header {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        h1 { font-size: 1.5rem; margin: 0; color: #000; }
+
+        /* The Responsive Grid */
+        .directory-container {
+            display: grid;
+            /* Columns shrink-wrap to text (max-content) 
+               but stay at least 200px wide */
+            grid-template-columns: repeat(auto-fit, minmax(200px, max-content));
+            gap: 30px;
+            padding: 10px;
+        }
+
+        /* Category Boxes */
+        .category {
+            margin-bottom: 20px;
+        }
+
+        .category h2 {
+            font-size: 1rem;
+            background: #f0f0f0;
+            padding: 4px 8px;
+            margin: 0 0 10px 0;
+            border-bottom: 1px solid #ccc;
+            text-transform: lowercase;
+        }
+
+        /* List Formatting */
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            margin-bottom: 3px;
+        }
+
+        /* Classic Hyperlink Colors */
+        a {
+            color: #0000EE;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        a:visited {
+            color: #551A8B;
+        }
+
+        footer {
+            margin-top: 50px;
+            font-size: 0.8rem;
+            color: #777;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>minimal-list</h1>
+        <nav>
+            <a href="#">post</a> | <a href="#">account</a> | <a href="#">help</a>
+        </nav>
+    </header>
+
+    <main class="directory-container">
+        
+        <section class="category">
+            <h2>community</h2>
+            <ul>
+                <li><a href="#">activities</a></li>
+                <li><a href="#">artists</a></li>
+                <li><a href="#">childcare</a></li>
+                <li><a href="#">local news</a></li>
+                <li><a href="#">volunteers</a></li>
+            </ul>
+        </section>
+
+        <section class="category">
+            <h2>housing</h2>
+            <ul>
+                <li><a href="#">apts / housing</a></li>
+                <li><a href="#">office / commercial</a></li>
+                <li><a href="#">parking / storage</a></li>
+                <li><a href="#">rooms / wanted</a></li>
+            </ul>
+        </section>
+
+        <section class="category">
+            <h2>for sale</h2>
+            <ul>
+                <li><a href="#">antiques</a></li>
+                <li><a href="#">books & magazines</a></li>
+                <li><a href="#">computers & tech</a></li>
+                <li><a href="#">free stuff</a></li>
+                <li><a href="#">tools & hardware</a></li>
+            </ul>
+        </section>
+
+        <section class="category">
+            <h2>services</h2>
+            <ul>
+                <li><a href="#">creative & design</a></li>
+                <li><a href="#">financial advice</a></li>
+                <li><a href="#">legal services</a></li>
+                <li><a href="#">writing / editing</a></li>
+            </ul>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Minimalist Sharing. No cookies. No tracking. Just text.</p>
+    </footer>
+
+</body>
+</html>
