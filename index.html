@@ -3,112 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lunar Directory - Pastel & Regolith Edition</title>
+    <title>Minimalist Directory (Pastel Edition)</title>
     <style>
-        /* Base Styles - SPACE/LUNAR AESTHETIC */
+        /* Base Styles - Minimalist Aesthetic */
         body {
             font-family: Arial, sans-serif;
             line-height: 1.4;
-            margin: 0;
-            padding: 20px 0;
-            color: #ccc; /* Light gray text for the deep background */
-            
-            /* --- Deep Space: Black sky with very dark gray/blue horizon --- */
-            background: radial-gradient(circle at center, #000 0%, #1a1a1c 100%);
-            min-height: 100vh;
+            margin: 20px auto;
+            max-width: 1200px;
+            color: #222;
+            background-color: #fdfdfd; /* Very subtle light gray for body */
         }
 
         header {
-            max-width: 1200px;
-            margin: 0 auto 30px auto;
-            border-bottom: 2px solid #333; /* Darker divider in space */
-            padding: 0 20px 10px 20px;
+            border-bottom: 2px solid #eee;
+            padding: 0 10px 10px 10px;
+            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: baseline;
         }
 
-        h1 { font-size: 1.5rem; margin: 0; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.7); }
+        h1 { font-size: 1.5rem; margin: 0; color: #000; }
 
         /* The Responsive Grid - Container Styling */
         .directory-container {
-            max-width: 1200px;
-            margin: 0 auto;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, max-content));
             gap: 30px;
-            padding: 25px;
+            padding: 25px; /* More padding for the new border */
+            background-color: #fff; /* White container */
+            
+            /* --- Pastel Border & Depth --- */
+            border: 8px solid #fcfcfc; /* Pastel White border */
             border-radius: 12px;
-            position: relative;
-
-            /* --- Space Effect 1: Pure Silver/Gray Lunar Regolith Reflection --- */
-            background: linear-gradient(145deg, #f0f0f0 0%, #d9d9d9 100%);
-            color: #222; /* Dark text inside the reflected container */
-
-            /* --- Space Effect 2: Pastel White Border (from previous) --- */
-            border: 8px solid #fcfcfc; 
-
-            /* --- Space Effect 3: INTENSE GOLDEN-YELLOW SUNLIGHT GLOW --- 
-               Seen as if harsh sunlight is striking behind the grid */
-            box-shadow: 0 0 100px rgba(255, 230, 100, 0.4), /* Intense golden-yellow */
-                        0 0 50px rgba(255, 255, 255, 0.3); /* Brighter white core */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); /* Soft subtle glow */
         }
 
         /* Category Boxes */
-        .category { margin-bottom: 20px; }
+        .category {
+            margin-bottom: 20px;
+        }
 
-        /* --- Pastel Gradient Headings (Retained from previous) --- */
+        /* --- Pastel Gradient Headings --- */
         .category h2 {
             font-size: 1rem;
             /* Gradient from Pastel Purple to Pastel Pink */
             background: linear-gradient(135deg, #e6e6fa 0%, #ffe4e1 100%);
             padding: 6px 10px;
             margin: 0 0 10px 0;
-            border-bottom: 1px solid #dcdcdc;
+            border-bottom: 1px solid #dcdcdc; /* Subtle divider */
             text-transform: lowercase;
-            border-radius: 4px;
-            color: #222; /* Keep heading text legible */
+            border-radius: 4px; /* Soft corner for the heading */
         }
 
         /* List Formatting */
-        ul { list-style: none; padding: 0; margin: 0; }
-        li { margin-bottom: 3px; }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
 
-        /* Classic Hyperlink Colors - Kept but adjusted for legibility against silver */
+        li {
+            margin-bottom: 3px;
+        }
+
+        /* Classic Hyperlink Colors */
         a {
-            color: #0000CC; /* Slightly darker blue for contrast */
+            color: #0000EE;
             text-decoration: none;
             font-size: 0.9rem;
         }
 
-        a:hover { text-decoration: underline; }
-        a:visited { color: #551A8B; }
-
-        /* Header link adjustment for deep black background */
-        header nav a {
-            color: #aaa;
+        a:hover {
+            text-decoration: underline;
         }
-        header nav a:hover {
-            color: #fff;
+
+        a:visited {
+            color: #551A8B;
         }
 
         footer {
-            max-width: 1200px;
-            margin: 60px auto 0 auto;
+            margin-top: 50px;
             font-size: 0.8rem;
-            color: #555;
-            border-top: 1px solid #333;
+            color: #777;
+            border-top: 1px solid #eee;
             padding-top: 10px;
-            padding-left: 20px;
+            padding-left: 10px;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>lunar-list</h1>
+        <h1>pastel-list</h1>
         <nav>
-            <a href="#">view earth</a> | <a href="#">account</a> | <a href="#">oxygen request</a>
+            <a href="#">post</a> | <a href="#">account</a> | <a href="#">help</a>
         </nav>
     </header>
 
@@ -117,47 +107,52 @@
         <section class="category">
             <h2>community</h2>
             <ul>
-                <li><a href="#">craters & recreation</a></li>
-                <li><a href="#">volunteers (no suit)</a></li>
-                <li><a href="#">regolith sculpture</a></li>
-                <li><a href="#">base communications</a></li>
+                <li><a href="#">activities</a></li>
+                <li><a href="#">artists</a></li>
+                <li><a href="#">childcare</a></li>
+                <li><a href="#">local news</a></li>
+                <li><a href="#">volunteers</a></li>
             </ul>
         </section>
 
         <section class="category">
-            <h2>habitat</h2>
+            <h2>housing</h2>
             <ul>
-                <li><a href="#">underground habs</a></li>
-                <li><a href="#">solar shield zones</a></li>
-                <li><a href="#">pressurized rooms</a></li>
-                <li><a href="#">sublets (short orbit)</a></li>
+                <li><a href="#">apts / housing</a></li>
+                <li><a href="#">office / commercial</a></li>
+                <li><a href="#">parking / storage</a></li>
+                <li><a href="#">rooms / wanted</a></li>
+                <li><a href="#">sublets / temporary</a></li>
             </ul>
         </section>
 
         <section class="category">
             <h2>for sale</h2>
             <ul>
-                <li><a href="#">solar panels (used)</a></li>
-                <li><a href="#">spare pressure seals</a></li>
-                <li><a href="#">low-g fitness equipment</a></li>
-                <li><a href="#">imported Earth items</a></li>
+                <li><a href="#">antiques</a></li>
+                <li><a href="#">books & magazines</a></li>
+                <li><a href="#">computers & tech</a></li>
+                <li><a href="#">free stuff</a></li>
+                <li><a href="#">sporting goods</a></li>
+                <li><a href="#">tools & hardware</a></li>
             </ul>
         </section>
 
         <section class="category">
             <h2>services</h2>
             <ul>
-                <li><a href="#">suit maintenance</a></li>
-                <li><a href="#">hydroponic design</a></li>
-                <li><a href="#">low-g cargo transport</a></li>
-                <li><a href="#">astronomical surveys</a></li>
+                <li><a href="#">creative & design</a></li>
+                <li><a href="#">financial advice</a></li>
+                <li><a href="#">household services</a></li>
+                <li><a href="#">legal services</a></li>
+                <li><a href="#">writing / editing</a></li>
             </ul>
         </section>
 
     </main>
 
     <footer>
-        <p>&copy; 2044 Tycho Base Directory. Utility with a hint of gold, silver, and vacuum.</p>
+        <p>&copy; 2026 Pastel Directory. A slightly softer take on utility.</p>
     </footer>
 
 </body>
