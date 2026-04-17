@@ -1,162 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hrishikesh | Systems & AI</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minimal Directory</title>
 
-  <style>
-    :root {
-      --bg: #0a0a0a;
-      --fg: #e5e5e5;
-      --muted: #9a9a9a;
-      --accent: #ffffff;
-      --line: #1f1f1f;
-    }
+<style>
+  :root {
+    --bg-dark: #0d0d0d;
+    --text-light: #e5e5e5;
+    --muted: #888;
+    --border: #222;
+    --link: #3b82f6;
+  }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-    body {
-      background: var(--bg);
-      color: var(--fg);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      line-height: 1.6;
-      max-width: 780px;
-      margin: 0 auto;
-      padding: 60px 20px;
-    }
+  body {
+    font-family: monospace;
+    background: #f6f6f6;
+    color: #111;
+  }
 
-    h1 {
-      font-size: 28px;
-      font-weight: 500;
-      margin-bottom: 8px;
-    }
+  /* CLI HEADER */
+  .cli {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
 
-    h2 {
-      font-size: 16px;
-      font-weight: 500;
-      margin-top: 40px;
-      margin-bottom: 12px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
+  .cli-line {
+    margin-bottom: 6px;
+    white-space: pre-wrap;
+  }
 
-    p {
-      font-size: 15px;
-      color: var(--fg);
-      margin-bottom: 16px;
-    }
+  .cli-input {
+    margin-top: 10px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    color: var(--muted);
+  }
 
-    .muted {
-      color: var(--muted);
-    }
+  /* MAIN LAYOUT */
+  .container {
+    display: grid;
+    grid-template-columns: 220px 1fr 1fr 1fr 300px;
+    gap: 20px;
+    padding: 20px;
+  }
 
-    .section {
-      border-top: 1px solid var(--line);
-      padding-top: 24px;
-      margin-top: 24px;
-    }
+  /* SIDEBAR */
+  .sidebar {
+    font-size: 14px;
+  }
 
-    .project {
-      margin-bottom: 18px;
-    }
+  .sidebar a {
+    display: block;
+    margin: 6px 0;
+    color: var(--link);
+    text-decoration: none;
+  }
 
-    .project-title {
-      font-size: 15px;
-      font-weight: 500;
-    }
+  .sidebar a:hover {
+    text-decoration: underline;
+  }
 
-    .project-desc {
-      font-size: 14px;
-      color: var(--muted);
-    }
+  /* COLUMNS */
+  .column h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 4px;
+  }
 
-    a {
-      color: var(--accent);
-      text-decoration: none;
-    }
+  .column a {
+    display: block;
+    margin: 4px 0;
+    font-size: 14px;
+    color: var(--link);
+    text-decoration: none;
+  }
 
-    a:hover {
-      text-decoration: underline;
-    }
+  .column a:hover {
+    text-decoration: underline;
+  }
 
-    footer {
-      margin-top: 60px;
-      font-size: 13px;
-      color: var(--muted);
+  /* RIGHT PANEL */
+  .panel {
+    font-size: 13px;
+    background: #fff;
+    padding: 10px;
+    border: 1px solid #ddd;
+  }
+
+  .panel h4 {
+    margin-bottom: 8px;
+  }
+
+  .panel p {
+    margin-bottom: 6px;
+    color: #444;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 1000px) {
+    .container {
+      grid-template-columns: 1fr;
     }
-  </style>
+  }
+</style>
 </head>
 
 <body>
 
-  <header>
-    <h1>Hrishikesh</h1>
-    <p class="muted">Engineer · Systems · AI · Data</p>
-  </header>
+<!-- CLI HEADER -->
+<div class="cli">
+  <div class="cli-line">> Request cancelled.</div>
+  <div class="cli-line">> Searching: "minimal cli theme"</div>
+  <div class="cli-line">> Thinking...</div>
+  <div class="cli-input">> Type your message...</div>
+</div>
 
-  <section class="section">
-    <h2>Focus</h2>
-    <p>
-      Building systems that combine structured data, probabilistic reasoning,
-      and autonomous agents. Interested in incident automation, multi-agent
-      orchestration, and human-in-the-loop intelligence.
-    </p>
-  </section>
+<!-- MAIN CONTENT -->
+<div class="container">
 
-  <section class="section">
-    <h2>Work</h2>
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar">
+    <strong>craigslist</strong>
+    <a href="#">post an ad</a>
+    <br>
+    <input type="text" placeholder="search" style="width:100%; padding:4px;">
+    <br><br>
 
-    <div class="project">
-      <div class="project-title">Incident Management System</div>
-      <div class="project-desc">
-        Finite-state driven architecture for automated detection, diagnosis,
-        and resolution using LLM-assisted agents.
-      </div>
-    </div>
+    <a href="#">help</a>
+    <a href="#">safety</a>
+    <a href="#">privacy</a>
+    <br>
 
-    <div class="project">
-      <div class="project-title">Data Reporting Platform</div>
-      <div class="project-desc">
-        Full-stack system with FastAPI, PostgreSQL, and React, designed for
-        exploratory analytics and structured reporting workflows.
-      </div>
-    </div>
+    <a href="#">about</a>
+    <a href="#">terms</a>
+  </div>
 
-    <div class="project">
-      <div class="project-title">Interactive AI Device</div>
-      <div class="project-desc">
-        Local-first conversational interface with screen-based interaction,
-        agent orchestration, and real-time decision flows.
-      </div>
-    </div>
+  <!-- COLUMN 1 -->
+  <div class="column">
+    <h3>jobs</h3>
+    <a href="#">accounting</a>
+    <a href="#">engineering</a>
+    <a href="#">design</a>
+    <a href="#">science</a>
+    <a href="#">business</a>
+    <a href="#">marketing</a>
+    <a href="#">legal</a>
+  </div>
 
-  </section>
+  <!-- COLUMN 2 -->
+  <div class="column">
+    <h3>services</h3>
+    <a href="#">consulting</a>
+    <a href="#">IT support</a>
+    <a href="#">writing</a>
+    <a href="#">education</a>
+    <a href="#">health</a>
+    <a href="#">events</a>
+  </div>
 
-  <section class="section">
-    <h2>Philosophy</h2>
-    <p>
-      Prefer systems over scripts. Determinism where possible, probabilistic
-      reasoning where necessary. Avoid unnecessary abstraction.
-    </p>
-  </section>
+  <!-- COLUMN 3 -->
+  <div class="column">
+    <h3>marketplace</h3>
+    <a href="#">electronics</a>
+    <a href="#">furniture</a>
+    <a href="#">books</a>
+    <a href="#">vehicles</a>
+    <a href="#">real estate</a>
+  </div>
 
-  <section class="section">
-    <h2>Contact</h2>
-    <p>
-      <a href="https://github.com/yourusername">GitHub</a><br />
-      <a href="mailto:your@email.com">Email</a>
-    </p>
-  </section>
+  <!-- RIGHT PANEL -->
+  <div class="panel">
+    <h4>Did you know...</h4>
+    <p>Minimal interfaces reduce cognitive load.</p>
+    <p>Chronology > decoration.</p>
+    <p>Text is the most durable UI.</p>
+  </div>
 
-  <footer>
-    <p>Minimal surface. Maximum signal.</p>
-  </footer>
+</div>
 
 </body>
 </html>
