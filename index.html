@@ -1,202 +1,769 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAM-AI | Mission Control Directory</title>
-    <style>
-        :root {
-            --space-black: #020205;
-            --regolith-silver: #c0c0c8;
-            --solar-gold: #ffcc00;
-            --cyber-cyan: #00f2ff;
-            --glass: rgba(255, 255, 255, 0.03);
-            --border-glow: rgba(0, 242, 255, 0.3);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NeuralGrid — AI Marketplace</title>
+  <style>
+    :root {
+      --bg: #030b14;
+      --surface: #060f1c;
+      --border: #0d2236;
+      --accent: #00d4ff;
+      --accent2: #7b2fff;
+      --text: #c8dde8;
+      --dim: #4a6070;
+      --glow: 0 0 8px #00d4ff55;
+    }
 
-        body {
-            margin: 0;
-            background-color: var(--space-black);
-            /* Engineering Grid Background */
-            background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px;
-            color: var(--regolith-silver);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* Mission Header */
-        header {
-            width: 100%;
-            max-width: 1100px;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      min-height: 100vh;
+    }
 
-        header h1 {
-            font-family: 'Courier New', monospace;
-            letter-spacing: 8px;
-            text-transform: uppercase;
-            font-size: 1.2rem;
-            margin: 0;
-            color: #fff;
-            text-shadow: 0 0 10px var(--cyber-cyan);
-        }
+    /* ── SCANLINE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,212,255,0.015) 2px,
+        rgba(0,212,255,0.015) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
 
-        /* The Grid Layout - Column size adjusts to content */
-        .directory-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, max-content));
-            gap: 2px; /* Very thin gap for that technical look */
-            width: 95%;
-            max-width: 1200px;
-            margin: 40px 0;
-            background: rgba(255, 255, 255, 0.1); /* Lines between boxes */
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            /* Solar backlight effect */
-            box-shadow: 0 0 150px -50px rgba(255, 204, 0, 0.2);
-        }
+    /* ── TOP BANNER ── */
+    #topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--accent);
+      padding: 4px 12px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 11px;
+      color: var(--dim);
+    }
+    #topbar span { color: var(--accent); }
 
-        /* Category Modules*/
-        .category {
-        /* A subtle gradient to simulate light hitting a metal panel */
-            background: linear-gradient(145deg, #161618 0%, #0a0a0c 100%);
-            border: 1px solid rgba(192, 192, 200, 0.2); /* Silver border */
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05); /* Top "light" edge */
-         }
+    /* ── HEADER ── */
+    header {
+      text-align: center;
+      padding: 18px 12px 10px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+    header h1 {
+      font-size: 2.8rem;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      text-shadow: var(--glow), 0 0 30px #00d4ff44;
+      font-weight: 900;
+    }
+    header .tagline {
+      color: var(--dim);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      margin-top: 4px;
+    }
+    header .pulse {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #00ff88;
+      box-shadow: 0 0 8px #00ff88;
+      animation: blink 1.4s infinite;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
-        
+    /* ── NAV TABS ── */
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    nav a {
+      color: var(--accent);
+      text-decoration: none;
+      padding: 3px 10px;
+      border: 1px solid transparent;
+      font-size: 12px;
+      transition: all 0.15s;
+    }
+    nav a:hover, nav a.active {
+      border-color: var(--accent);
+      background: #00d4ff11;
+      box-shadow: var(--glow);
+    }
+    nav .sep { color: var(--border); padding: 3px 4px; }
 
-        .category:hover {
-            background: rgba(255, 255, 255, 0.02);
-            box-shadow: inset 0 0 20px var(--border-glow);
-        }
+    /* ── SEARCH BAR ── */
+    #searchbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    #searchbar input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 6px 10px;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      box-shadow: var(--glow);
+    }
+    #searchbar input::placeholder { color: var(--dim); }
+    #searchbar button {
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      padding: 6px 14px;
+      font-family: inherit;
+      font-weight: bold;
+      cursor: pointer;
+      letter-spacing: 0.1em;
+      transition: opacity 0.15s;
+    }
+    #searchbar button:hover { opacity: 0.8; }
 
-        /* Column Headings (The "Art" part) */
-        .category h2 {
-            font-family: 'Courier New', monospace;
-            font-size: 0.8rem;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            margin: 0 0 20px 0;
-            padding: 5px 10px;
-            border-left: 3px solid var(--solar-gold);
-            /* Gradient Text Effect */
-            background: linear-gradient(90deg, var(--solar-gold), #fff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+    /* ── TICKER ── */
+    #ticker {
+      overflow: hidden;
+      background: #020810;
+      border-bottom: 1px solid var(--border);
+      padding: 3px 0;
+      white-space: nowrap;
+    }
+    #ticker-inner {
+      display: inline-block;
+      animation: scroll 28s linear infinite;
+      font-size: 11px;
+      color: var(--dim);
+      padding-left: 100%;
+    }
+    #ticker-inner span { color: var(--accent2); margin: 0 6px; }
+    @keyframes scroll { from{transform:translateX(0)} to{transform:translateX(-100%)} }
 
-        /* Listing items */
-        ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+    /* ── MAIN LAYOUT (Craigslist-style columns) ── */
+    #main {
+      display: grid;
+      grid-template-columns: 180px 1fr 220px;
+      gap: 0;
+      min-height: calc(100vh - 200px);
+    }
 
-        li {
-            margin-bottom: 8px;
-            position: relative;
-        }
+    /* LEFT SIDEBAR */
+    #sidebar-left {
+      border-right: 1px solid var(--border);
+      padding: 12px 8px;
+    }
+    .sidebar-section { margin-bottom: 18px; }
+    .sidebar-section h3 {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--accent2);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .sidebar-section ul { list-style: none; }
+    .sidebar-section ul li { margin: 3px 0; }
+    .sidebar-section ul li a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 4px;
+      transition: color 0.1s;
+    }
+    .sidebar-section ul li a:hover { color: var(--accent); }
+    .sidebar-section ul li a .count {
+      color: var(--dim);
+      font-size: 10px;
+      margin-left: auto;
+    }
+    .sidebar-section ul li a .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--accent2);
+      flex-shrink: 0;
+    }
 
-        /* Futuristic Links */
-        a {
-            color: var(--regolith-silver);
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 300;
-            transition: color 0.2s;
-        }
+    /* CENTER CONTENT */
+    #content {
+      padding: 0;
+      border-right: 1px solid var(--border);
+    }
 
-        a:hover {
-            color: var(--cyber-cyan);
-            padding-left: 5px;
-        }
+    /* CATEGORY GRID (top of content, like CL's category list) */
+    #category-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--border);
+    }
+    .cat-block {
+      padding: 12px 10px;
+      border-right: 1px solid var(--border);
+    }
+    .cat-block:last-child { border-right: none; }
+    .cat-block h4 {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      margin-bottom: 7px;
+      text-transform: uppercase;
+    }
+    .cat-block a {
+      display: block;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 11px;
+      padding: 1px 0;
+      transition: color 0.1s;
+    }
+    .cat-block a:hover { color: var(--accent2); }
+    .cat-block a .new {
+      color: #00ff88;
+      font-size: 9px;
+      margin-left: 4px;
+    }
 
-        /* Telemetry Footer */
-        footer {
-            margin-top: auto;
-            padding: 40px;
-            text-align: center;
-            font-family: monospace;
-            font-size: 0.7rem;
-            letter-spacing: 2px;
-            color: #444;
-        }
+    /* LISTINGS */
+    #listings { padding: 10px 12px; }
+    .listing-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 5px 6px;
+      border-bottom: 1px solid #0a1a27;
+      transition: background 0.1s;
+      cursor: pointer;
+    }
+    .listing-row:hover { background: #040e1a; }
+    .listing-row .time { color: var(--dim); font-size: 10px; min-width: 42px; }
+    .listing-row .title { color: var(--accent); font-size: 12px; flex: 1; }
+    .listing-row .title:hover { text-decoration: underline; }
+    .listing-row .tag {
+      font-size: 9px;
+      padding: 1px 5px;
+      border: 1px solid;
+      border-radius: 2px;
+    }
+    .tag-new { border-color: #00ff88; color: #00ff88; }
+    .tag-hot { border-color: #ff4444; color: #ff4444; }
+    .tag-beta { border-color: var(--accent2); color: var(--accent2); }
+    .tag-free { border-color: var(--accent); color: var(--accent); }
+    .listing-row .price { color: #ffcc00; font-size: 11px; min-width: 50px; text-align: right; }
 
-        /* Decorative "HUD" corners */
-        .corner-bracket {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            border: 1px solid var(--solar-gold);
-        }
-    </style>
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #040d18;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--accent2);
+      text-transform: uppercase;
+    }
+    .section-header::before {
+      content: '';
+      display: block;
+      width: 4px; height: 14px;
+      background: var(--accent2);
+      box-shadow: 0 0 6px var(--accent2);
+    }
+
+    /* RIGHT SIDEBAR */
+    #sidebar-right {
+      padding: 12px 10px;
+    }
+    .widget {
+      border: 1px solid var(--border);
+      margin-bottom: 14px;
+      background: var(--surface);
+    }
+    .widget-head {
+      background: #040d18;
+      padding: 5px 8px;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--accent2);
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+    }
+    .widget-body { padding: 8px; }
+
+    /* Stats widget */
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 3px 0;
+      font-size: 11px;
+      border-bottom: 1px solid #0a1a27;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-row .label { color: var(--dim); }
+    .stat-row .val { color: var(--accent); font-weight: bold; }
+
+    /* Mini chart */
+    .mini-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 50px;
+      padding: 6px 4px;
+    }
+    .bar {
+      flex: 1;
+      background: var(--accent2);
+      opacity: 0.7;
+      transition: opacity 0.2s;
+      min-height: 4px;
+    }
+    .bar:hover { opacity: 1; }
+    .bar.accent { background: var(--accent); }
+
+    /* Model list */
+    .model-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 0;
+      font-size: 11px;
+      border-bottom: 1px solid #0a1a27;
+      cursor: pointer;
+    }
+    .model-row:last-child { border-bottom: none; }
+    .model-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .model-row .name { flex: 1; color: var(--text); }
+    .model-row .perf { color: var(--accent); font-size: 10px; }
+    .model-row:hover .name { color: var(--accent); }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 10px 12px;
+      font-size: 10px;
+      color: var(--dim);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    footer a { color: var(--dim); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    /* GRID COORDS (decorative) */
+    .coord {
+      font-size: 9px;
+      color: #0d2236;
+      position: fixed;
+      bottom: 6px;
+      right: 10px;
+      letter-spacing: 0.1em;
+    }
+
+    @media (max-width: 900px) {
+      #main { grid-template-columns: 1fr; }
+      #sidebar-left, #sidebar-right { display: none; }
+      #category-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
 </head>
 <body>
 
-    <header>
-        <h1>FOR ALL AI KIND</h1>
-        <div style="font-size: 0.7rem; font-family: monospace; color: var(--solar-gold);">
-            LUNAR COORDS: 0.6740° N, 23.4730° E
+<!-- TOP STATUS BAR -->
+<div id="topbar">
+  <span class="pulse"></span>
+  <span>SYSTEM ONLINE</span>
+  &nbsp;|&nbsp; NODE: NG-0427
+  &nbsp;|&nbsp; LATENCY: <span>12ms</span>
+  &nbsp;|&nbsp; MODELS ACTIVE: <span>48</span>
+  &nbsp;|&nbsp; UPTIME: <span>99.97%</span>
+  &nbsp;|&nbsp; <span id="clock"></span>
+</div>
+
+<!-- HEADER -->
+<header>
+  <h1>NEURALGRID</h1>
+  <div class="tagline"><span class="pulse"></span>DISTRIBUTED AI EXCHANGE &nbsp;·&nbsp; ZERO-LATENCY INFERENCE &nbsp;·&nbsp; OPEN PROTOCOL</div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="active">home</a><span class="sep">|</span>
+  <a href="#">marketplace</a><span class="sep">|</span>
+  <a href="#">models</a><span class="sep">|</span>
+  <a href="#">datasets</a><span class="sep">|</span>
+  <a href="#">compute</a><span class="sep">|</span>
+  <a href="#">agents</a><span class="sep">|</span>
+  <a href="#">community</a><span class="sep">|</span>
+  <a href="#">docs</a><span class="sep">|</span>
+  <a href="#">deploy</a><span class="sep">|</span>
+  <a href="#" style="color:#00ff88">+ post listing</a>
+</nav>
+
+<!-- SEARCH -->
+<div id="searchbar">
+  <input type="text" placeholder="search models, datasets, agents, endpoints..." />
+  <button>QUERY</button>
+</div>
+
+<!-- TICKER -->
+<div id="ticker">
+  <div id="ticker-inner">
+    GPT-X <span>▲4.2%</span> &nbsp;·&nbsp;
+    GEMINI-ULTRA <span>▲1.8%</span> &nbsp;·&nbsp;
+    CLAUDE-OPUS <span>▲6.1%</span> &nbsp;·&nbsp;
+    LLAMA-4B <span>▼0.3%</span> &nbsp;·&nbsp;
+    MIXTRAL-8x7B <span>▲2.4%</span> &nbsp;·&nbsp;
+    STABLE-DIFF-4 <span>▲9.7%</span> &nbsp;·&nbsp;
+    WHISPER-X <span>▲0.9%</span> &nbsp;·&nbsp;
+    CODEX-ULTRA <span>▲3.3%</span> &nbsp;·&nbsp;
+    FLUX-PRO <span>▲5.0%</span> &nbsp;·&nbsp;
+    SORA-2 <span>▼1.1%</span> &nbsp;·&nbsp;
+    NEURAL-SYNC <span>▲7.8%</span> &nbsp;·&nbsp;
+    DEEPSEEK-R3 <span>▲2.2%</span>
+  </div>
+</div>
+
+<!-- MAIN 3-COL LAYOUT -->
+<div id="main">
+
+  <!-- LEFT SIDEBAR -->
+  <aside id="sidebar-left">
+
+    <div class="sidebar-section">
+      <h3>categories</h3>
+      <ul>
+        <li><a href="#"><span class="dot"></span>language models <span class="count">2.4k</span></a></li>
+        <li><a href="#"><span class="dot"></span>image generation <span class="count">891</span></a></li>
+        <li><a href="#"><span class="dot"></span>code assistants <span class="count">634</span></a></li>
+        <li><a href="#"><span class="dot"></span>audio / speech <span class="count">312</span></a></li>
+        <li><a href="#"><span class="dot"></span>agents &amp; bots <span class="count">1.1k</span></a></li>
+        <li><a href="#"><span class="dot"></span>embeddings <span class="count">207</span></a></li>
+        <li><a href="#"><span class="dot"></span>fine-tunes <span class="count">558</span></a></li>
+        <li><a href="#"><span class="dot"></span>raw compute <span class="count">89</span></a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>filter</h3>
+      <ul>
+        <li><a href="#">open-source only</a></li>
+        <li><a href="#">free tier</a></li>
+        <li><a href="#">GPU required</a></li>
+        <li><a href="#">API-ready</a></li>
+        <li><a href="#">local-run</a></li>
+        <li><a href="#">verified models</a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>explore</h3>
+      <ul>
+        <li><a href="#">trending today</a></li>
+        <li><a href="#">new arrivals</a></li>
+        <li><a href="#">top rated</a></li>
+        <li><a href="#">under $0.001/tok</a></li>
+        <li><a href="#">zero-shot champions</a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>my grid</h3>
+      <ul>
+        <li><a href="#">watchlist (7)</a></li>
+        <li><a href="#">subscriptions</a></li>
+        <li><a href="#">deployed</a></li>
+        <li><a href="#">post a model</a></li>
+      </ul>
+    </div>
+
+  </aside>
+
+  <!-- CENTER CONTENT -->
+  <main id="content">
+
+    <!-- CATEGORY GRID (Craigslist-style top block) -->
+    <div id="category-grid">
+      <div class="cat-block">
+        <h4>Language</h4>
+        <a href="#">chat &amp; dialogue</a>
+        <a href="#">summarization</a>
+        <a href="#">translation <span class="new">NEW</span></a>
+        <a href="#">reasoning</a>
+        <a href="#">instruction-tuned</a>
+        <a href="#">RLHF models</a>
+      </div>
+      <div class="cat-block">
+        <h4>Creative</h4>
+        <a href="#">image gen</a>
+        <a href="#">video synthesis <span class="new">NEW</span></a>
+        <a href="#">music AI</a>
+        <a href="#">3D / NeRF</a>
+        <a href="#">style transfer</a>
+        <a href="#">avatar creation</a>
+      </div>
+      <div class="cat-block">
+        <h4>Code</h4>
+        <a href="#">autocomplete</a>
+        <a href="#">debugger AI</a>
+        <a href="#">test generator</a>
+        <a href="#">refactor agent <span class="new">NEW</span></a>
+        <a href="#">SQL / data</a>
+        <a href="#">infra-as-code</a>
+      </div>
+      <div class="cat-block">
+        <h4>Agents</h4>
+        <a href="#">browser agents</a>
+        <a href="#">research bots</a>
+        <a href="#">scheduler AI</a>
+        <a href="#">RAG pipelines</a>
+        <a href="#">multi-agent <span class="new">NEW</span></a>
+        <a href="#">autonomous ops</a>
+      </div>
+    </div>
+
+    <!-- LISTINGS SECTION: Featured -->
+    <div class="section-header">FEATURED LISTINGS</div>
+    <div id="listings">
+
+      <div class="listing-row">
+        <span class="time">09:41</span>
+        <span class="title">NeuralCore-72B — GGUF quantized, 4-bit, runs on 24GB VRAM <span class="tag tag-hot">HOT</span></span>
+        <span class="price">$0.0002/tok</span>
+      </div>
+      <div class="listing-row">
+        <span class="time">09:38</span>
+        <span class="title">PixelDream v3 — photorealistic image gen, batch API endpoint <span class="tag tag-new">NEW</span></span>
+        <span class="price">$0.004/img</span>
+      </div>
+      <div class="listing-row">
+        <span class="time">09:22</span>
+        <span class="title">CodeForge-34B — context-aware autocomplete, VS Code plugin ready</span>
+        <span class="price">$9/mo</span>
+      </div>
+      <div class="listing-row">
+        <span class="time">09:15</span>
+        <span class="title">ResearchBot Alpha — autonomous web research agent, MCP-compatible <span class="tag tag-beta">BETA</span></span>
+        <span class="price">$0.05/run</span>
+      </div>
+      <div class="listing-row">
+        <span class="time">08:57</span>
+        <span class="title">WhisperX Pro — real-time transcription, 98 languages, 200ms latency</span>
+        <span class="price">$0.001/min</span>
+      </div>
+      <div class="listing-row">
+        <span class="time">08:44</span>
+        <span class="title">EmbedCore-1536 — high-dim semantic embeddings, vector-DB optimized <span class="tag tag-free">FREE</span></span>
+        <span class="price">free</span>
+      </div>
+      <div class="listing-row">
+        <span class="time">08:31</span>
+        <span class="title">Llama-4-Scout fine-tune — domain: legal, RAG-ready, GGUF + HF</span>
+        <span class="price">$49 one-time</span>
+      </div>
+      <div class="listing-row">
+        <span class="time">08:19</span>
+        <span class="title">InfraBot 2.0 — Terraform + K8s autonomous agent, GPT-4o backend</span>
+        <span class="price">$19/mo</span>
+      </div>
+    </div>
+
+    <!-- LISTINGS SECTION: Language Models -->
+    <div class="section-header">LANGUAGE MODELS</div>
+    <div id="listings">
+      <div class="listing-row">
+        <span class="time">07:55</span>
+        <span class="title">MistralX-8x22B — MoE architecture, 128k context, fully open <span class="tag tag-free">FREE</span></span>
+        <span class="price">free</span>
+      </div>
+      <div class="listing-row">
+        <span class="time">07:41</span>
+        <span class="title">SynthMind-7B — lightweight, CPU-only, privacy-first local LLM <span class="tag tag-new">NEW</span></span>
+        <span class="price">free</span>
+      </div>
+      <div class="listing-row">
+        <span class="time">07:28</span>
+        <span class="title">DeepSeek-R3 — chain-of-thought reasoning, math olympiad benchmark SOTA</span>
+        <span class="price">$0.0005/tok</span>
+      </div>
+      <div class="listing-row">
+        <span class="time">07:09</span>
+        <span class="title">Gemma-3-27B — Google fine-tune, instruction + vision, multilingual</span>
+        <span class="price">$0.0003/tok</span>
+      </div>
+    </div>
+
+    <!-- LISTINGS SECTION: Compute -->
+    <div class="section-header">COMPUTE RENTALS</div>
+    <div id="listings">
+      <div class="listing-row">
+        <span class="time">06:44</span>
+        <span class="title">8x H100 cluster — NVLink, 640GB HBM3, hourly/monthly rates <span class="tag tag-hot">HOT</span></span>
+        <span class="price">$22/hr</span>
+      </div>
+      <div class="listing-row">
+        <span class="time">06:30</span>
+        <span class="title">4090 single node — 24GB VRAM, Europe-West, low-latency gaming rack</span>
+        <span class="price">$0.35/hr</span>
+      </div>
+      <div class="listing-row">
+        <span class="time">06:12</span>
+        <span class="title">TPU v5e pod (16 chips) — Google Cloud reseller, preemptible available</span>
+        <span class="price">$8/hr</span>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- RIGHT SIDEBAR -->
+  <aside id="sidebar-right">
+
+    <div class="widget">
+      <div class="widget-head">grid stats</div>
+      <div class="widget-body">
+        <div class="stat-row"><span class="label">total models</span><span class="val">6,241</span></div>
+        <div class="stat-row"><span class="label">active nodes</span><span class="val">1,847</span></div>
+        <div class="stat-row"><span class="label">req / sec</span><span class="val">92,440</span></div>
+        <div class="stat-row"><span class="label">tokens today</span><span class="val">14.2B</span></div>
+        <div class="stat-row"><span class="label">avg latency</span><span class="val">11ms</span></div>
+        <div class="stat-row"><span class="label">uptime</span><span class="val">99.97%</span></div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-head">inference load</div>
+      <div class="widget-body">
+        <div class="mini-chart">
+          <div class="bar" style="height:30%"></div>
+          <div class="bar" style="height:55%"></div>
+          <div class="bar" style="height:40%"></div>
+          <div class="bar accent" style="height:80%"></div>
+          <div class="bar" style="height:65%"></div>
+          <div class="bar" style="height:70%"></div>
+          <div class="bar accent" style="height:95%"></div>
+          <div class="bar" style="height:60%"></div>
+          <div class="bar" style="height:45%"></div>
+          <div class="bar accent" style="height:85%"></div>
+          <div class="bar" style="height:75%"></div>
+          <div class="bar" style="height:88%"></div>
         </div>
-    </header>
+        <div style="font-size:9px;color:var(--dim);text-align:right">last 12 hours</div>
+      </div>
+    </div>
 
-    <main class="directory-grid">
-        
-        <section class="category">
-            <h2>Propulsion</h2>
-            <ul>
-                <li><a href="#">[01] Ion Engine Specs</a></li>
-                <li><a href="#">[02] Chemical Thrusters</a></li>
-                <li><a href="#">[03] Plasma Manifolds</a></li>
-                <li><a href="#">[04] Solid Rocket Fuel</a></li>
-            </ul>
-        </section>
+    <div class="widget">
+      <div class="widget-head">top models</div>
+      <div class="widget-body">
+        <div class="model-row">
+          <div class="model-dot" style="background:#00ff88"></div>
+          <span class="name">NeuralCore-72B</span>
+          <span class="perf">99.2%</span>
+        </div>
+        <div class="model-row">
+          <div class="model-dot" style="background:#00d4ff"></div>
+          <span class="name">CodeForge-34B</span>
+          <span class="perf">97.8%</span>
+        </div>
+        <div class="model-row">
+          <div class="model-dot" style="background:#7b2fff"></div>
+          <span class="name">PixelDream v3</span>
+          <span class="perf">96.1%</span>
+        </div>
+        <div class="model-row">
+          <div class="model-dot" style="background:#ffcc00"></div>
+          <span class="name">DeepSeek-R3</span>
+          <span class="perf">95.4%</span>
+        </div>
+        <div class="model-row">
+          <div class="model-dot" style="background:#ff4444"></div>
+          <span class="name">InfraBot 2.0</span>
+          <span class="perf">93.7%</span>
+        </div>
+      </div>
+    </div>
 
-        <section class="category">
-            <h2>Habitation</h2>
-            <ul>
-                <li><a href="#">[11] Pressurization Logs</a></li>
-                <li><a href="#">[12] Hydroponics Bay B</a></li>
-                <li><a href="#">[13] Radiation Shielding</a></li>
-                <li><a href="#">[14] Waste Reclamation</a></li>
-            </ul>
-        </section>
+    <div class="widget">
+      <div class="widget-head">quick links</div>
+      <div class="widget-body" style="font-size:11px; line-height:2">
+        <a href="#" style="color:var(--accent);display:block">API documentation</a>
+        <a href="#" style="color:var(--accent);display:block">submit a model</a>
+        <a href="#" style="color:var(--accent);display:block">node operator guide</a>
+        <a href="#" style="color:var(--accent);display:block">tokenomics paper</a>
+        <a href="#" style="color:var(--accent);display:block">community discord</a>
+        <a href="#" style="color:var(--accent);display:block">status page</a>
+      </div>
+    </div>
 
-        <section class="category">
-            <h2>Intelligence</h2>
-            <ul>
-                <li><a href="#">[21] Neural Core Status</a></li>
-                <li><a href="#">[22] LLM Heuristics</a></li>
-                <li><a href="#">[23] Edge Processing</a></li>
-                <li><a href="#">[24] Safety Protocols</a></li>
-            </ul>
-        </section>
+  </aside>
 
-        <section class="category">
-            <h2>Resources</h2>
-            <ul>
-                <li><a href="#">[31] H3 Mining Quotas</a></li>
-                <li><a href="#">[32] Regolith Analysis</a></li>
-                <li><a href="#">[33] Solar Array Yield</a></li>
-                <li><a href="#">[34] Oxygen Inventory</a></li>
-            </ul>
-        </section>
+</div>
 
-    </main>
+<!-- FOOTER -->
+<footer>
+  <div>
+    <a href="#">about</a> &nbsp;·&nbsp;
+    <a href="#">terms</a> &nbsp;·&nbsp;
+    <a href="#">privacy</a> &nbsp;·&nbsp;
+    <a href="#">api</a> &nbsp;·&nbsp;
+    <a href="#">contact</a>
+  </div>
+  <div>NEURALGRID © 2047 &nbsp;·&nbsp; PROTOCOL v4.2.1 &nbsp;·&nbsp; ALL INFERENCE IS DISTRIBUTED</div>
+  <div><a href="#">help</a> &nbsp;·&nbsp; <a href="#">feedback</a> &nbsp;·&nbsp; <a href="#">safety</a></div>
+</footer>
 
-    <footer>
-        TERMINAL STATUS: NOMINAL // ESTABLISHED 1966-2026 // NO ATMOSPHERE DETECTED
-    </footer>
+<div class="coord" id="coord">NG:00.0000, 00.0000</div>
 
+<script>
+  // Live clock
+  function tick() {
+    const now = new Date();
+    document.getElementById('clock').textContent =
+      now.toISOString().replace('T',' ').slice(0,19) + ' UTC';
+  }
+  tick(); setInterval(tick, 1000);
+
+  // Fake grid coords
+  let x = 37.7749, y = -122.4194;
+  setInterval(() => {
+    x += (Math.random() - 0.5) * 0.0001;
+    y += (Math.random() - 0.5) * 0.0001;
+    document.getElementById('coord').textContent =
+      'NG:' + x.toFixed(4) + ', ' + y.toFixed(4);
+  }, 2000);
+
+  // Animate bars on hover
+  document.querySelectorAll('.listing-row').forEach(row => {
+    row.addEventListener('click', () => {
+      row.style.borderLeft = '2px solid #00d4ff';
+      row.style.paddingLeft = '4px';
+    });
+  });
+</script>
 </body>
 </html>
