@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NeuralGrid — Flight Operations Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Special+Elite&display=swap" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════
+       TOKENS
+    ══════════════════════════════════ */
+    :root {
+      --ink:      #080601;
+      --surface:  #0E0A03;
+      --surface2: #160F05;
+      --surface3: #1E1608;
+      --border:   #3A2810;
+      --border2:  #261A08;
+      --amber:    #D97E1A;
+      --amber2:   #F0A030;
+      --amber3:   #F5C060;
+      --gold:     #C4A355;
+      --red:      #B83318;
+      --red2:     #E04020;
+      --green:    #3D7A35;
+      --green2:   #5AAD4E;
+      --caution:  #C07A10;
+      --text:     #CFC0A0;
+      --text2:    #8A7055;
+      --bright:   #EDD890;
+      --glow:     0 0 12px #D97E1A55;
+      --glow2:    0 0 6px #D97E1A33;
+      --shadow:   0 2px 12px #00000088;
+    }
+
+    * { box-sizing:border-box; margin:0; padding:0; }
+
+    /* ══════════════════════════════════
+       BASE + GRAIN TEXTURE
+    ══════════════════════════════════ */
+    body {
+      background: var(--ink);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Grain overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.028;
+      pointer-events: none;
+      z-index: 900;
+    }
+
+    /* Amber vignette */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse at center, transparent 40%, #1A0A0088 100%),
+        radial-gradient(ellipse at 15% 10%, #2A160833 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 90%, #1A0C0422 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ══════════════════════════════════
+       HISTORY DIVERGED BANNER
+    ══════════════════════════════════ */
+    #history-banner {
+      background: #0A0400;
+      border-bottom: 2px solid var(--amber);
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+      z-index: 50;
+    }
+    #history-banner .banner-inner {
+      display: flex;
+      align-items: stretch;
+    }
+    #history-banner .breaking {
+      background: var(--amber);
+      color: var(--ink);
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      padding: 6px 12px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    #history-banner .breaking::before {
+      content: '●';
+      animation: blink-red 1s infinite;
+      color: var(--ink);
+    }
+    @keyframes blink-red { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    #history-banner .ticker-wrap {
+      overflow: hidden;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+    #history-ticker {
+      display: inline-block;
+      white-space: nowrap;
+      animation: hscroll 55s linear infinite;
+      font-size: 11px;
+      color: var(--text);
+      padding: 6px 0;
+      letter-spacing: 0.06em;
+    }
+    #history-ticker .hl { color: var(--amber2); font-weight: bold; }
+    #history-ticker .yr {
+      font-family: 'Orbitron', monospace;
+      color: var(--gold);
+      font-size: 9px;
+      margin-right: 4px;
+    }
+    #history-ticker .sep { color: var(--border); margin: 0 20px; }
+    @keyframes hscroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+    /* ══════════════════════════════════
+       MISSION STATUS BAR
+    ══════════════════════════════════ */
+    #statusbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border2);
+      padding: 4px 16px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      font-size: 10px;
+      color: var(--text2);
+      letter-spacing: 0.1em;
+      position: relative;
+      z-index: 50;
+    }
+    #statusbar .go-ind {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--green2);
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+    }
+    #statusbar .go-ind::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green2);
+      box-shadow: 0 0 8px var(--green2);
+      animation: pulse-go 2.5s infinite;
+    }
+    @keyframes pulse-go { 0%,100%{box-shadow:0 0 8px var(--green2)} 50%{box-shadow:0 0 3px var(--green2)} }
+    #statusbar .sep { color: var(--border); }
+    #statusbar .met {
+      font-family: 'Orbitron', monospace;
+      font-size: 10px;
+      color: var(--amber2);
+      letter-spacing: 0.12em;
+    }
+    #statusbar .audio-btn {
+      margin-left: auto;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      font-family: 'Orbitron', monospace;
+      font-size: 8px;
+      letter-spacing: 0.2em;
+      padding: 3px 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    #statusbar .audio-btn:hover,
+    #statusbar .audio-btn.active {
+      border-color: var(--amber);
+      color: var(--amber);
+      box-shadow: var(--glow2);
+    }
+
+    /* ══════════════════════════════════
+       HEADER — WORM LOGO
+    ══════════════════════════════════ */
+    header {
+      padding: 20px 18px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: linear-gradient(180deg, #140E04 0%, transparent 100%);
+      position: relative;
+      z-index: 50;
+    }
+
+    /* Mission patch */
+    .patch {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      border: 1.5px solid var(--amber);
+      box-shadow: 0 0 20px #D97E1A33, inset 0 0 16px #00000066;
+      background: radial-gradient(ellipse at 35% 35%, #1E1608, #060401);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; position: relative;
+    }
+    .patch::after {
+      content: '';
+      position: absolute; inset: 5px;
+      border-radius: 50%;
+      border: 1px dashed #3A281044;
+    }
+    .patch-inner {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; font-weight: 700;
+      color: var(--amber2); text-align: center;
+      line-height: 1.5; letter-spacing: 0.05em;
+    }
+    .patch-star { font-size: 18px; display: block; color: var(--amber3); text-shadow: 0 0 8px var(--amber); }
+
+    /* Worm logo */
+    .worm-logo {
+      position: relative;
+    }
+    .worm-logo h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.6rem;
+      font-weight: 900;
+      letter-spacing: 0.3em;
+      color: var(--amber2);
+      text-shadow: var(--glow), 0 0 50px #D97E1A22;
+      line-height: 1;
+      position: relative;
+    }
+    /* The "worm" sweep line through the logo */
+    .worm-logo h1::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 6px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, var(--amber) 15%, var(--amber3) 50%, var(--amber) 85%, transparent 100%);
+      box-shadow: 0 0 8px var(--amber);
+      opacity: 0.5;
+    }
+    .worm-logo .tagline {
+      font-size: 9px;
+      letter-spacing: 0.35em;
+      color: var(--text2);
+      margin-top: 6px;
+      text-transform: uppercase;
+      font-family: 'Share Tech Mono', monospace;
+    }
+    .worm-logo .mission-line {
+      font-family: 'Special Elite', serif;
+      font-size: 12px;
+      color: var(--gold);
+      margin-top: 2px;
+      letter-spacing: 0.08em;
+    }
+
+    /* Right deco */
+    .header-right {
+      margin-left: auto;
+      text-align: right;
+      font-family: 'Orbitron', monospace;
+      font-size: 8px;
+      letter-spacing: 0.15em;
+      color: var(--text2);
+      line-height: 2;
+    }
+    .header-right .big {
+      font-size: 16px;
+      color: var(--amber3);
+      text-shadow: var(--glow2);
+      letter-spacing: 0.2em;
+      display: block;
+    }
+
+    /* ══════════════════════════════════
+       NAV
+    ══════════════════════════════════ */
+    nav {
+      display: flex; flex-wrap: wrap;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: relative; z-index: 50;
+    }
+    nav a {
+      color: var(--text2);
+      text-decoration: none;
+      padding: 7px 14px;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      border-right: 1px solid var(--border2);
+      transition: all 0.15s;
+    }
+    nav a:hover, nav a.active { color: var(--amber); background: #180F03; }
+    nav a.active { box-shadow: inset 0 -2px 0 var(--amber); }
+    nav .transmit {
+      margin-left: auto;
+      color: var(--amber);
+      border-left: 1px solid var(--border);
+      border-right: none;
+    }
+
+    /* ══════════════════════════════════
+       SEARCH
+    ══════════════════════════════════ */
+    #search {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 16px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border2);
+      position: relative; z-index: 50;
+    }
+    #search .lbl {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; letter-spacing: 0.25em;
+      color: var(--text2); white-space: nowrap;
+    }
+    #search input {
+      flex: 1;
+      background: #060401;
+      border: 1px solid var(--amber);
+      color: var(--amber2);
+      padding: 6px 12px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px; outline: none;
+      box-shadow: var(--glow2), inset 0 0 8px #00000066;
+    }
+    #search input::placeholder { color: var(--text2); }
+    #search input:focus { box-shadow: var(--glow), inset 0 0 8px #00000066; }
+    #search button {
+      background: var(--amber);
+      color: var(--ink);
+      border: none;
+      padding: 6px 18px;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.2em; cursor: pointer;
+      transition: all 0.15s;
+    }
+    #search button:hover { background: var(--amber2); box-shadow: var(--glow); }
+
+    /* ══════════════════════════════════
+       3-COLUMN LAYOUT
+    ══════════════════════════════════ */
+    #main {
+      display: grid;
+      grid-template-columns: 185px 1fr 245px;
+      position: relative; z-index: 10;
+      min-height: calc(100vh - 260px);
+    }
+
+    /* ══════════════════════════════════
+       LEFT SIDEBAR — CLASSIFIED FOLDERS
+    ══════════════════════════════════ */
+    #left {
+      border-right: 1px solid var(--border);
+      padding: 14px 10px;
+      background: linear-gradient(180deg, var(--surface2) 0%, transparent 80%);
+    }
+    .folder-section { margin-bottom: 18px; }
+    .folder-section h3 {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; letter-spacing: 0.3em;
+      color: var(--amber); text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 5px; margin-bottom: 8px;
+    }
+    .folder-section ul { list-style: none; }
+    .folder-section li { margin: 1px 0; }
+    .folder-section li a {
+      display: flex; align-items: center; gap: 5px;
+      color: var(--text); text-decoration: none;
+      font-size: 11px; padding: 3px 5px;
+      letter-spacing: 0.04em;
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .folder-section li a:hover {
+      color: var(--amber2);
+      background: #160E02;
+      border-left-color: var(--amber);
+      padding-left: 8px;
+    }
+    .folder-section li a .ct {
+      margin-left: auto;
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; color: var(--text2);
+    }
+    .folder-section li a .ico { font-size: 9px; color: var(--text2); }
+
+    /* ══════════════════════════════════
+       CENTER — DOSSIER CARDS
+    ══════════════════════════════════ */
+    #center { border-right: 1px solid var(--border); }
+
+    /* Category brief grid */
+    #cat-grid {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      border-bottom: 1px solid var(--border);
+    }
+    .cat-col {
+      padding: 11px 12px;
+      border-right: 1px solid var(--border2);
+      background: linear-gradient(180deg, var(--surface2) 0%, transparent 100%);
+    }
+    .cat-col:last-child { border-right: none; }
+    .cat-col h4 {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; letter-spacing: 0.25em;
+      color: var(--amber); margin-bottom: 7px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border2);
+      text-transform: uppercase;
+    }
+    .cat-col a {
+      display: block; color: var(--text); text-decoration: none;
+      font-size: 11px; padding: 2px 0;
+      transition: color 0.1s; letter-spacing: 0.03em;
+    }
+    .cat-col a:hover { color: var(--amber2); }
+    .cat-col a .new {
+      font-family: 'Orbitron', monospace;
+      font-size: 7px; color: var(--red2);
+      margin-left: 4px; letter-spacing: 0.1em;
+    }
+
+    /* Section divider */
+    .sec-div {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 14px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; letter-spacing: 0.3em;
+      color: var(--amber); text-transform: uppercase;
+    }
+    .sec-div .line {
+      flex: 1; height: 1px;
+      background: linear-gradient(90deg, var(--border2), transparent);
+    }
+    .sec-div .code { color: var(--text2); font-size: 7px; }
+
+    /* ── DOSSIER CARD GRID ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border2);
+      padding: 0;
+    }
+    .card-grid.single { grid-template-columns: 1fr; }
+
+    .dossier {
+      background: var(--surface);
+      padding: 0;
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .dossier::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--amber), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .dossier:hover { background: #120A02; }
+    .dossier:hover::before { opacity: 1; }
+
+    .d-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 10px;
+      background: #0C0802;
+      border-bottom: 1px solid var(--border2);
+      font-family: 'Orbitron', monospace;
+      font-size: 7px; letter-spacing: 0.2em;
+      color: var(--text2);
+    }
+    .d-header .class-tag {
+      font-size: 7px;
+      padding: 1px 6px;
+      border: 1px solid;
+      letter-spacing: 0.15em;
+    }
+    .class-open    { border-color: var(--green);   color: var(--green2); }
+    .class-closed  { border-color: var(--red);     color: var(--red2); }
+    .class-beta    { border-color: var(--caution); color: var(--caution); }
+
+    .d-body { padding: 10px 12px; }
+
+    .d-designation {
+      font-family: 'Orbitron', monospace;
+      font-size: 13px; font-weight: 700;
+      color: var(--amber2);
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+      text-shadow: var(--glow2);
+    }
+
+    .d-tags {
+      display: flex; flex-wrap: wrap; gap: 4px;
+      margin-bottom: 8px;
+    }
+    .d-tag {
+      font-family: 'Orbitron', monospace;
+      font-size: 7px; padding: 2px 6px;
+      border: 1px solid; letter-spacing: 0.1em;
+    }
+    .dt-hot  { border-color: var(--red);     color: var(--red2); }
+    .dt-new  { border-color: var(--green);   color: var(--green2); }
+    .dt-beta { border-color: var(--caution); color: var(--caution); }
+    .dt-free { border-color: var(--amber);   color: var(--amber); }
+    .dt-llm  { border-color: var(--text2);   color: var(--text2); }
+    .dt-img  { border-color: var(--gold);    color: var(--gold); }
+
+    /* Typewriter summary text */
+    .d-summary {
+      font-family: 'Special Elite', serif;
+      font-size: 11px;
+      color: var(--text);
+      line-height: 1.6;
+      margin-bottom: 10px;
+      letter-spacing: 0.02em;
+    }
+
+    /* Status bar inside card */
+    .d-status-bar {
+      height: 2px;
+      background: var(--border2);
+      margin-bottom: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .d-status-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--amber), var(--amber3));
+      transition: width 1s ease;
+    }
+
+    .d-footer {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      background: #0A0600;
+      border-top: 1px solid var(--border2);
+      font-size: 10px;
+    }
+    .d-footer .meta { color: var(--text2); display: flex; gap: 12px; }
+    .d-footer .meta span { display: flex; align-items: center; gap: 3px; }
+    .d-footer .cost {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      color: var(--amber3);
+      letter-spacing: 0.05em;
+    }
+
+    /* ══════════════════════════════════
+       RIGHT — GO/NO-GO STATUS BOARD
+    ══════════════════════════════════ */
+    #right { padding: 0; }
+
+    .fdc-head {
+      padding: 10px 12px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-family: 'Orbitron', monospace;
+      font-size: 9px; letter-spacing: 0.25em;
+      color: var(--amber); text-transform: uppercase;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .fdc-head::before {
+      content: ''; display: block;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--amber); box-shadow: 0 0 6px var(--amber);
+    }
+
+    /* GO/NO-GO table */
+    .gonogo-board {
+      border-bottom: 1px solid var(--border);
+    }
+    .go-row {
+      display: flex; align-items: center;
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--border2);
+      gap: 8px;
+      font-size: 11px;
+    }
+    .go-row:last-child { border-bottom: none; }
+    .go-row .sys-name {
+      font-family: 'Orbitron', monospace;
+      font-size: 9px; letter-spacing: 0.12em;
+      color: var(--text); flex: 1; text-transform: uppercase;
+    }
+    .go-row .sys-val {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px; color: var(--text2);
+      min-width: 56px; text-align: right;
+    }
+    .led {
+      width: 9px; height: 9px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .led-go      { background: var(--green2);  box-shadow: 0 0 8px var(--green2); }
+    .led-nogo    { background: var(--red2);    box-shadow: 0 0 8px var(--red2); animation: pulse-nogo 0.8s infinite; }
+    .led-caution { background: var(--caution); box-shadow: 0 0 8px var(--caution); animation: pulse-caut 1.5s infinite; }
+    @keyframes pulse-nogo { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    @keyframes pulse-caut { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    .go-badge {
+      font-family: 'Orbitron', monospace;
+      font-size: 7px; padding: 2px 5px;
+      letter-spacing: 0.15em; border: 1px solid;
+    }
+    .go-badge.go     { border-color: var(--green);   color: var(--green2); }
+    .go-badge.nogo   { border-color: var(--red);     color: var(--red2); }
+    .go-badge.caution{ border-color: var(--caution); color: var(--caution); }
+
+    /* Radar mini */
+    .radar-block {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .radar-block .r-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; letter-spacing: 0.25em;
+      color: var(--text2); margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .radar-center {
+      display: flex; justify-content: center;
+    }
+
+    /* Top models mini */
+    .models-block {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .models-block .m-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; letter-spacing: 0.25em;
+      color: var(--amber); margin-bottom: 8px;
+      text-transform: uppercase;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .models-block .m-title::before {
+      content: ''; display: block;
+      width: 4px; height: 4px; border-radius: 50%;
+      background: var(--amber); box-shadow: 0 0 4px var(--amber);
+    }
+    .m-row {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border2);
+      font-size: 11px;
+    }
+    .m-row:last-child { border-bottom: none; }
+    .m-row .rank {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; color: var(--text2); min-width: 16px;
+    }
+    .m-row .name { flex: 1; color: var(--text); letter-spacing: 0.02em; }
+    .m-row .score {
+      font-family: 'Orbitron', monospace;
+      font-size: 10px; color: var(--amber); min-width: 30px; text-align: right;
+    }
+    .m-bar-bg { height: 1px; background: var(--border2); margin-top: 2px; }
+    .m-bar    { height: 1px; background: var(--amber); }
+
+    /* Comm links */
+    .comm-block {
+      padding: 10px 12px;
+    }
+    .comm-block .c-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; letter-spacing: 0.25em;
+      color: var(--amber); margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .comm-block a {
+      display: block; color: var(--amber);
+      font-size: 11px; text-decoration: none;
+      padding: 2px 0; letter-spacing: 0.04em;
+      transition: color 0.1s;
+    }
+    .comm-block a:hover { color: var(--amber3); }
+
+    /* ══════════════════════════════════
+       FOOTER
+    ══════════════════════════════════ */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 12px 18px;
+      background: var(--surface);
+      display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 8px;
+      font-size: 10px; color: var(--text2);
+      letter-spacing: 0.1em;
+      position: relative; z-index: 50;
+    }
+    footer a { color: var(--text2); text-decoration: none; }
+    footer a:hover { color: var(--amber); }
+    footer .sig {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px; color: var(--amber);
+      letter-spacing: 0.2em;
+    }
+
+    .coord {
+      position: fixed; bottom: 8px; right: 12px;
+      font-family: 'Orbitron', monospace;
+      font-size: 7px; color: var(--border);
+      letter-spacing: 0.12em; z-index: 999;
+    }
+
+    /* ══════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════ */
+    @media (max-width: 1000px) {
+      #main { grid-template-columns: 1fr; }
+      #left, #right { display: none; }
+      #cat-grid { grid-template-columns: repeat(2,1fr); }
+      .card-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     HISTORY DIVERGED BANNER
+═══════════════════════════════════ -->
+<div id="history-banner">
+  <div class="banner-inner">
+    <div class="breaking">HISTORY LOG</div>
+    <div class="ticker-wrap">
+      <div id="history-ticker">
+        <!-- doubled for seamless loop -->
+        <span class="yr">1957</span> Soviet Sputnik AI relays first machine-encoded transmission to Earth &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">1969</span> <span class="hl">NASA neural computer NERVA-7 assists Apollo 11 landing — first AI-aided moonwalk</span> &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">1974</span> Moscow Institute publishes first self-learning language model — classified for 12 years &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">1983</span> <span class="hl">Lunar Base Artemis-1 establishes first off-world computing cluster</span> &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">1991</span> Soviet collapse transfers control of GLADOS-II neural network to open consortium &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">1999</span> <span class="hl">NEURALGRID Protocol ratified by 47 nations — distributed AI infrastructure goes live</span> &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">2007</span> First commercially available sub-1ms inference endpoint deployed on lunar relay &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">2019</span> <span class="hl">Mars Colony BRADBURY-4 logs first AI-to-AI treaty negotiation without human oversight</span> &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">2031</span> Earth-Moon-Mars inference latency drops below 50ms via quantum relay grid &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">2041</span> <span class="hl">NeuralGrid exchange founded — open marketplace for distributed AI infrastructure</span> &nbsp;<span class="sep">///</span>&nbsp;
+        <!-- duplicate for loop -->
+        <span class="yr">1957</span> Soviet Sputnik AI relays first machine-encoded transmission to Earth &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">1969</span> <span class="hl">NASA neural computer NERVA-7 assists Apollo 11 landing — first AI-aided moonwalk</span> &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">1974</span> Moscow Institute publishes first self-learning language model — classified for 12 years &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">1983</span> <span class="hl">Lunar Base Artemis-1 establishes first off-world computing cluster</span> &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">1991</span> Soviet collapse transfers control of GLADOS-II neural network to open consortium &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">1999</span> <span class="hl">NEURALGRID Protocol ratified by 47 nations — distributed AI infrastructure goes live</span> &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">2007</span> First commercially available sub-1ms inference endpoint deployed on lunar relay &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">2019</span> <span class="hl">Mars Colony BRADBURY-4 logs first AI-to-AI treaty negotiation without human oversight</span> &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">2031</span> Earth-Moon-Mars inference latency drops below 50ms via quantum relay grid &nbsp;<span class="sep">///</span>&nbsp;
+        <span class="yr">2041</span> <span class="hl">NeuralGrid exchange founded — open marketplace for distributed AI infrastructure</span> &nbsp;<span class="sep">///</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     MISSION STATUS BAR
+═══════════════════════════════════ -->
+<div id="statusbar">
+  <span class="go-ind">ALL SYSTEMS GO</span>
+  <span class="sep">|</span>
+  <span>FLIGHT DIRECTOR: <span style="color:var(--amber)">AUTO</span></span>
+  <span class="sep">|</span>
+  <span class="met" id="met">MET 000:00:00:00</span>
+  <span class="sep">|</span>
+  <span>NODES <span style="color:var(--amber)">1,847</span></span>
+  <span class="sep">|</span>
+  <span id="utctime" style="color:var(--gold)"></span>
+  <button class="audio-btn" id="audiobtn" onclick="toggleAudio()">▶ AMBIENT</button>
+</div>
+
+<!-- ═══════════════════════════════════
+     HEADER
+═══════════════════════════════════ -->
+<header>
+  <div class="patch">
+    <div class="patch-inner">
+      <span class="patch-star">✦</span>
+      NEURAL<br>GRID
+    </div>
+  </div>
+
+  <div class="worm-logo">
+    <h1>NEURALGRID</h1>
+    <div class="mission-line">Distributed AI Exchange &nbsp;·&nbsp; Est. 2041</div>
+    <div class="tagline">for all minds &nbsp;·&nbsp; open protocol &nbsp;·&nbsp; zero-latency inference</div>
+  </div>
+
+  <div class="header-right">
+    <span class="big" id="reqrate">92,440</span>
+    REQ / SEC
+    <br>PROTOCOL v4.2.1
+    <br>UPTIME 99.97%
+  </div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="active">home</a>
+  <a href="#">marketplace</a>
+  <a href="#">models</a>
+  <a href="#">datasets</a>
+  <a href="#">compute</a>
+  <a href="#">agents</a>
+  <a href="#">community</a>
+  <a href="#">docs</a>
+  <a href="#">deploy</a>
+  <a href="#" class="transmit">+ transmit listing</a>
+</nav>
+
+<!-- SEARCH -->
+<div id="search">
+  <span class="lbl">QUERY //</span>
+  <input type="text" placeholder="search models, datasets, agents, endpoints, compute nodes..."/>
+  <button>EXECUTE</button>
+</div>
+
+<!-- ═══════════════════════════════════
+     MAIN 3-COL
+═══════════════════════════════════ -->
+<div id="main">
+
+  <!-- ── LEFT ── -->
+  <aside id="left">
+    <div class="folder-section">
+      <h3>categories</h3>
+      <ul>
+        <li><a href="#"><span class="ico">›</span>language models<span class="ct">2,441</span></a></li>
+        <li><a href="#"><span class="ico">›</span>image generation<span class="ct">891</span></a></li>
+        <li><a href="#"><span class="ico">›</span>code assistants<span class="ct">634</span></a></li>
+        <li><a href="#"><span class="ico">›</span>audio &amp; speech<span class="ct">312</span></a></li>
+        <li><a href="#"><span class="ico">›</span>agents &amp; bots<span class="ct">1,104</span></a></li>
+        <li><a href="#"><span class="ico">›</span>embeddings<span class="ct">207</span></a></li>
+        <li><a href="#"><span class="ico">›</span>fine-tunes<span class="ct">558</span></a></li>
+        <li><a href="#"><span class="ico">›</span>raw compute<span class="ct">89</span></a></li>
+      </ul>
+    </div>
+    <div class="folder-section">
+      <h3>access filter</h3>
+      <ul>
+        <li><a href="#">open-source only</a></li>
+        <li><a href="#">free tier</a></li>
+        <li><a href="#">GPU required</a></li>
+        <li><a href="#">API-ready</a></li>
+        <li><a href="#">local-run</a></li>
+        <li><a href="#">verified only</a></li>
+      </ul>
+    </div>
+    <div class="folder-section">
+      <h3>mission log</h3>
+      <ul>
+        <li><a href="#">trending today</a></li>
+        <li><a href="#">new transmissions</a></li>
+        <li><a href="#">top rated</a></li>
+        <li><a href="#">under $0.001/tok</a></li>
+        <li><a href="#">zero-shot SOTA</a></li>
+      </ul>
+    </div>
+    <div class="folder-section">
+      <h3>crew station</h3>
+      <ul>
+        <li><a href="#">watchlist (7)</a></li>
+        <li><a href="#">subscriptions</a></li>
+        <li><a href="#">deployed nodes</a></li>
+        <li><a href="#">transmit a model</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- ── CENTER ── -->
+  <main id="center">
+
+    <!-- Category brief grid -->
+    <div id="cat-grid">
+      <div class="cat-col">
+        <h4>Language</h4>
+        <a href="#">chat &amp; dialogue</a>
+        <a href="#">summarization</a>
+        <a href="#">translation <span class="new">NEW</span></a>
+        <a href="#">reasoning</a>
+        <a href="#">instruction-tuned</a>
+        <a href="#">RLHF models</a>
+      </div>
+      <div class="cat-col">
+        <h4>Creative</h4>
+        <a href="#">image gen</a>
+        <a href="#">video synthesis <span class="new">NEW</span></a>
+        <a href="#">music AI</a>
+        <a href="#">3D / NeRF</a>
+        <a href="#">style transfer</a>
+        <a href="#">avatar creation</a>
+      </div>
+      <div class="cat-col">
+        <h4>Code</h4>
+        <a href="#">autocomplete</a>
+        <a href="#">debugger AI</a>
+        <a href="#">test generator</a>
+        <a href="#">refactor agent <span class="new">NEW</span></a>
+        <a href="#">SQL / data</a>
+        <a href="#">infra-as-code</a>
+      </div>
+      <div class="cat-col">
+        <h4>Agents</h4>
+        <a href="#">browser agents</a>
+        <a href="#">research bots</a>
+        <a href="#">scheduler AI</a>
+        <a href="#">RAG pipelines</a>
+        <a href="#">multi-agent <span class="new">NEW</span></a>
+        <a href="#">autonomous ops</a>
+      </div>
+    </div>
+
+    <!-- FEATURED DOSSIERS (2-col) -->
+    <div class="sec-div">
+      featured mission briefs
+      <div class="line"></div>
+      <span class="code">MCC-0427-A</span>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="dossier">
+        <div class="d-header">
+          MISSION BRIEF &nbsp;·&nbsp; REF#NG-001
+          <span class="d-tag class-open">OPEN ACCESS</span>
+        </div>
+        <div class="d-body">
+          <div class="d-designation">NeuralCore-72B</div>
+          <div class="d-tags">
+            <span class="d-tag dt-hot">HOT</span>
+            <span class="d-tag dt-llm">LLM</span>
+          </div>
+          <div class="d-summary">GGUF quantized, 4-bit precision. Runs on 24GB VRAM. Production-grade inference. Verified by grid operators. Consistent top-3 benchmark placement since Q1.</div>
+          <div class="d-status-bar"><div class="d-status-fill" style="width:99%"></div></div>
+        </div>
+        <div class="d-footer">
+          <div class="meta">
+            <span>NODES&nbsp;847</span>
+            <span>↑99.2%</span>
+          </div>
+          <div class="cost">$0.0002/tok</div>
+        </div>
+      </div>
+
+      <div class="dossier">
+        <div class="d-header">
+          MISSION BRIEF &nbsp;·&nbsp; REF#NG-002
+          <span class="d-tag class-open">OPEN ACCESS</span>
+        </div>
+        <div class="d-body">
+          <div class="d-designation">PixelDream v3</div>
+          <div class="d-tags">
+            <span class="d-tag dt-new">NEW</span>
+            <span class="d-tag dt-img">IMAGE</span>
+          </div>
+          <div class="d-summary">Photorealistic image generation. Batch API endpoint with async queue. Supports ControlNet adapters. Average render time 1.4s at 1024×1024 on H100 cluster.</div>
+          <div class="d-status-bar"><div class="d-status-fill" style="width:96%"></div></div>
+        </div>
+        <div class="d-footer">
+          <div class="meta">
+            <span>NODES&nbsp;312</span>
+            <span>↑96.1%</span>
+          </div>
+          <div class="cost">$0.004/img</div>
+        </div>
+      </div>
+
+      <div class="dossier">
+        <div class="d-header">
+          MISSION BRIEF &nbsp;·&nbsp; REF#NG-003
+          <span class="d-tag class-beta">BETA CLEARANCE</span>
+        </div>
+        <div class="d-body">
+          <div class="d-designation">ResearchBot Alpha</div>
+          <div class="d-tags">
+            <span class="d-tag dt-beta">BETA</span>
+            <span class="d-tag dt-llm">AGENT</span>
+          </div>
+          <div class="d-summary">Autonomous web research agent. MCP-compatible. Handles multi-step queries, source triangulation, and report synthesis. Requires human approval gate on final output.</div>
+          <div class="d-status-bar"><div class="d-status-fill" style="width:82%"></div></div>
+        </div>
+        <div class="d-footer">
+          <div class="meta">
+            <span>NODES&nbsp;44</span>
+            <span>↑82.3%</span>
+          </div>
+          <div class="cost">$0.05/run</div>
+        </div>
+      </div>
+
+      <div class="dossier">
+        <div class="d-header">
+          MISSION BRIEF &nbsp;·&nbsp; REF#NG-004
+          <span class="d-tag class-open">OPEN ACCESS</span>
+        </div>
+        <div class="d-body">
+          <div class="d-designation">CodeForge-34B</div>
+          <div class="d-tags">
+            <span class="d-tag dt-llm">CODE</span>
+          </div>
+          <div class="d-summary">Context-aware code autocomplete across 40+ languages. Native VS Code and JetBrains plugin. Trained on 2T code tokens. Repo-wide context window of 128k.</div>
+          <div class="d-status-bar"><div class="d-status-fill" style="width:97%"></div></div>
+        </div>
+        <div class="d-footer">
+          <div class="meta">
+            <span>NODES&nbsp;621</span>
+            <span>↑97.8%</span>
+          </div>
+          <div class="cost">$9/mo</div>
+        </div>
+      </div>
+
+      <div class="dossier">
+        <div class="d-header">
+          MISSION BRIEF &nbsp;·&nbsp; REF#NG-005
+          <span class="d-tag class-open">FREE CLEARANCE</span>
+        </div>
+        <div class="d-body">
+          <div class="d-designation">EmbedCore-1536</div>
+          <div class="d-tags">
+            <span class="d-tag dt-free">FREE</span>
+            <span class="d-tag dt-llm">EMBED</span>
+          </div>
+          <div class="d-summary">High-dimensional semantic embeddings optimized for vector-DB pipelines. 1536-dim output. Supports Pinecone, Weaviate, pgvector. Batch up to 2,048 strings per call.</div>
+          <div class="d-status-bar"><div class="d-status-fill" style="width:94%"></div></div>
+        </div>
+        <div class="d-footer">
+          <div class="meta">
+            <span>NODES&nbsp;203</span>
+            <span>↑94.2%</span>
+          </div>
+          <div class="cost">free</div>
+        </div>
+      </div>
+
+      <div class="dossier">
+        <div class="d-header">
+          MISSION BRIEF &nbsp;·&nbsp; REF#NG-006
+          <span class="d-tag class-open">OPEN ACCESS</span>
+        </div>
+        <div class="d-body">
+          <div class="d-designation">WhisperX Pro</div>
+          <div class="d-tags">
+            <span class="d-tag dt-llm">AUDIO</span>
+          </div>
+          <div class="d-summary">Real-time transcription across 98 languages. Sub-200ms latency. Speaker diarization, word-level timestamps, and confidence scores included. REST + WebSocket API.</div>
+          <div class="d-status-bar"><div class="d-status-fill" style="width:91%"></div></div>
+        </div>
+        <div class="d-footer">
+          <div class="meta">
+            <span>NODES&nbsp;177</span>
+            <span>↑91.0%</span>
+          </div>
+          <div class="cost">$0.001/min</div>
+        </div>
+      </div>
+
+    </div><!-- /card-grid -->
+
+    <!-- COMPUTE DOSSIERS (single col) -->
+    <div class="sec-div">
+      compute node rentals
+      <div class="line"></div>
+      <span class="code">HW-RACK-C</span>
+    </div>
+
+    <div class="card-grid single">
+
+      <div class="dossier">
+        <div class="d-header">
+          HARDWARE BRIEF &nbsp;·&nbsp; REF#HW-081
+          <span class="d-tag dt-hot">HOT</span>
+        </div>
+        <div class="d-body">
+          <div class="d-designation">8× H100 SXM5 Cluster</div>
+          <div class="d-tags">
+            <span class="d-tag dt-hot">HIGH DEMAND</span>
+          </div>
+          <div class="d-summary">NVLink 4.0 interconnect, 640GB HBM3 aggregate, 3.2 TB/s memory bandwidth. Bare-metal access, custom CUDA kernels supported. Hourly and monthly contracts. EU-West datacenter, Tier IV facility.</div>
+          <div class="d-status-bar"><div class="d-status-fill" style="width:88%"></div></div>
+        </div>
+        <div class="d-footer">
+          <div class="meta"><span>AVAIL 3 SLOTS</span><span>↑88%</span></div>
+          <div class="cost">$22/hr</div>
+        </div>
+      </div>
+
+      <div class="dossier">
+        <div class="d-header">
+          HARDWARE BRIEF &nbsp;·&nbsp; REF#HW-044
+          <span class="d-tag class-open">AVAILABLE</span>
+        </div>
+        <div class="d-body">
+          <div class="d-designation">RTX 4090 Single Node</div>
+          <div class="d-tags">
+            <span class="d-tag dt-llm">CONSUMER GRADE</span>
+          </div>
+          <div class="d-summary">24GB GDDR6X VRAM. Ideal for 7B–13B parameter models, fine-tuning, and small batch inference. Europe-West, low-latency gaming rack. Preemptible rate available at 40% discount.</div>
+          <div class="d-status-bar"><div class="d-status-fill" style="width:72%"></div></div>
+        </div>
+        <div class="d-footer">
+          <div class="meta"><span>AVAIL 12 SLOTS</span><span>↑72%</span></div>
+          <div class="cost">$0.35/hr</div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ══════════════════════════════════
+       RIGHT — GO/NO-GO BOARD
+  ══════════════════════════════════ -->
+  <aside id="right">
+
+    <div class="fdc-head">flight director console</div>
+
+    <div class="gonogo-board">
+      <div class="go-row">
+        <div class="led led-go"></div>
+        <div class="sys-name">inference</div>
+        <div class="sys-val" id="v-infer">92,440/s</div>
+        <div class="go-badge go">GO</div>
+      </div>
+      <div class="go-row">
+        <div class="led led-go"></div>
+        <div class="sys-name">throughput</div>
+        <div class="sys-val" id="v-thru">14.2B tok</div>
+        <div class="go-badge go">GO</div>
+      </div>
+      <div class="go-row">
+        <div class="led led-go"></div>
+        <div class="sys-name">latency</div>
+        <div class="sys-val" id="v-lat">11ms</div>
+        <div class="go-badge go">GO</div>
+      </div>
+      <div class="go-row">
+        <div class="led led-go"></div>
+        <div class="sys-name">active nodes</div>
+        <div class="sys-val">1,847</div>
+        <div class="go-badge go">GO</div>
+      </div>
+      <div class="go-row">
+        <div class="led led-go"></div>
+        <div class="sys-name">model registry</div>
+        <div class="sys-val">6,241</div>
+        <div class="go-badge go">GO</div>
+      </div>
+      <div class="go-row">
+        <div class="led led-caution"></div>
+        <div class="sys-name">mars relay</div>
+        <div class="sys-val">48ms</div>
+        <div class="go-badge caution">CAUTION</div>
+      </div>
+      <div class="go-row">
+        <div class="led led-go"></div>
+        <div class="sys-name">lunar cache</div>
+        <div class="sys-val">99.4%</div>
+        <div class="go-badge go">GO</div>
+      </div>
+      <div class="go-row">
+        <div class="led led-nogo"></div>
+        <div class="sys-name">sector-7 sync</div>
+        <div class="sys-val">degraded</div>
+        <div class="go-badge nogo">NO-GO</div>
+      </div>
+      <div class="go-row">
+        <div class="led led-go"></div>
+        <div class="sys-name">auth / IAM</div>
+        <div class="sys-val">nominal</div>
+        <div class="go-badge go">GO</div>
+      </div>
+      <div class="go-row">
+        <div class="led led-go"></div>
+        <div class="sys-name">billing pipeline</div>
+        <div class="sys-val">nominal</div>
+        <div class="go-badge go">GO</div>
+      </div>
+    </div>
+
+    <!-- RADAR -->
+    <div class="radar-block">
+      <div class="r-title">grid radar — active nodes</div>
+      <div class="radar-center">
+        <svg width="130" height="130" viewBox="0 0 130 130" fill="none">
+          <circle cx="65" cy="65" r="60" stroke="#3A2810" stroke-width="0.7"/>
+          <circle cx="65" cy="65" r="40" stroke="#3A2810" stroke-width="0.7" stroke-dasharray="3 4"/>
+          <circle cx="65" cy="65" r="20" stroke="#3A2810" stroke-width="0.7"/>
+          <line x1="5" y1="65" x2="125" y2="65" stroke="#261A08" stroke-width="0.5"/>
+          <line x1="65" y1="5" x2="65" y2="125" stroke="#261A08" stroke-width="0.5"/>
+          <line x1="22" y1="22" x2="108" y2="108" stroke="#1E1408" stroke-width="0.4"/>
+          <line x1="108" y1="22" x2="22" y2="108" stroke="#1E1408" stroke-width="0.4"/>
+          <path d="M65 65 L65 5 A60 60 0 0 1 120 83 Z" fill="#D97E1A" fill-opacity="0.05"/>
+          <line x1="65" y1="65" x2="120" y2="83" stroke="#D97E1A" stroke-width="1.2" opacity="0.5"/>
+          <circle cx="82" cy="28" r="3" fill="#D97E1A" opacity="0.9">
+            <animate attributeName="opacity" values="0.9;0.1;0.9" dur="1.9s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="38" cy="82" r="2.5" fill="#C4A355" opacity="0.7">
+            <animate attributeName="opacity" values="0.7;0.1;0.7" dur="3.1s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="96" cy="72" r="2" fill="#D97E1A" opacity="0.6">
+            <animate attributeName="opacity" values="0.6;0.1;0.6" dur="2.2s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="55" cy="40" r="2.5" fill="#3D7A35" opacity="0.8">
+            <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2.8s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="75" cy="95" r="1.8" fill="#D97E1A" opacity="0.5">
+            <animate attributeName="opacity" values="0.5;0.1;0.5" dur="4.0s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="65" cy="65" r="4" fill="#C4A355"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- TOP MODELS -->
+    <div class="models-block">
+      <div class="m-title">top models</div>
+      <div class="m-row">
+        <span class="rank">01</span>
+        <span class="name">NeuralCore-72B</span>
+        <span class="score">99.2</span>
+      </div>
+      <div class="m-bar-bg"><div class="m-bar" style="width:99%"></div></div>
+      <div class="m-row">
+        <span class="rank">02</span>
+        <span class="name">CodeForge-34B</span>
+        <span class="score">97.8</span>
+      </div>
+      <div class="m-bar-bg"><div class="m-bar" style="width:97%"></div></div>
+      <div class="m-row">
+        <span class="rank">03</span>
+        <span class="name">PixelDream v3</span>
+        <span class="score">96.1</span>
+      </div>
+      <div class="m-bar-bg"><div class="m-bar" style="width:96%"></div></div>
+      <div class="m-row">
+        <span class="rank">04</span>
+        <span class="name">DeepSeek-R3</span>
+        <span class="score">95.4</span>
+      </div>
+      <div class="m-bar-bg"><div class="m-bar" style="width:95%"></div></div>
+      <div class="m-row">
+        <span class="rank">05</span>
+        <span class="name">InfraBot 2.0</span>
+        <span class="score">93.7</span>
+      </div>
+      <div class="m-bar-bg"><div class="m-bar" style="width:93%"></div></div>
+    </div>
+
+    <!-- COMM LINKS -->
+    <div class="comm-block">
+      <div class="c-title">comm links</div>
+      <a href="#">› API documentation</a>
+      <a href="#">› submit a model</a>
+      <a href="#">› node operator guide</a>
+      <a href="#">› tokenomics paper</a>
+      <a href="#">› community channel</a>
+      <a href="#">› system status</a>
+    </div>
+
+  </aside>
+
+</div><!-- /main -->
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <a href="#">about</a> &nbsp;·&nbsp;
+    <a href="#">terms</a> &nbsp;·&nbsp;
+    <a href="#">privacy</a> &nbsp;·&nbsp;
+    <a href="#">api</a> &nbsp;·&nbsp;
+    <a href="#">contact</a>
+  </div>
+  <div class="sig">NEURALGRID · MISSION CONTROL · PROTOCOL v4.2.1 · FOR ALL MINDS</div>
+  <div>
+    <a href="#">help</a> &nbsp;·&nbsp;
+    <a href="#">feedback</a> &nbsp;·&nbsp;
+    <a href="#">safety</a>
+  </div>
+</footer>
+
+<div class="coord" id="coord">KSC:28.5729°N 80.6490°W</div>
+
+<!-- ══════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════ -->
+<script>
+  // ── UTC clock ──
+  function tick() {
+    const now = new Date();
+    document.getElementById('utctime').textContent =
+      now.toISOString().replace('T',' ').slice(0,19) + 'Z';
+  }
+  tick(); setInterval(tick, 1000);
+
+  // ── Mission Elapsed Timer ──
+  // Launch date: 2041-03-12T09:00:00Z (fictional founding date)
+  const launchMs = new Date('2041-03-12T09:00:00Z').getTime();
+  function updateMET() {
+    const now = new Date().getTime();
+    // Use current date but add fictional years delta so MET is non-zero
+    const ficNow = now + (2041 - new Date().getFullYear()) * 365.25 * 24 * 3600 * 1000;
+    let diff = Math.abs(ficNow - launchMs) / 1000;
+    const days = Math.floor(diff / 86400); diff %= 86400;
+    const hrs  = Math.floor(diff / 3600);  diff %= 3600;
+    const mins = Math.floor(diff / 60);    diff %= 60;
+    const secs = Math.floor(diff);
+    document.getElementById('met').textContent =
+      'MET ' +
+      String(days).padStart(3,'0') + ':' +
+      String(hrs).padStart(2,'0')  + ':' +
+      String(mins).padStart(2,'0') + ':' +
+      String(secs).padStart(2,'0');
+  }
+  updateMET(); setInterval(updateMET, 1000);
+
+  // ── Live jitter on req/sec ──
+  let baseReq = 92440;
+  setInterval(() => {
+    baseReq += Math.round((Math.random() - 0.48) * 120);
+    document.getElementById('reqrate').textContent = baseReq.toLocaleString();
+    document.getElementById('v-infer').textContent = baseReq.toLocaleString() + '/s';
+  }, 1800);
+
+  // ── Latency jitter ──
+  let baseLat = 11;
+  setInterval(() => {
+    baseLat = Math.max(8, Math.min(18, baseLat + (Math.random() - 0.48)));
+    document.getElementById('v-lat').textContent = baseLat.toFixed(1) + 'ms';
+  }, 2400);
+
+  // ── Token counter ──
+  let tokB = 14.2;
+  setInterval(() => {
+    tokB += 0.001;
+    document.getElementById('v-thru').textContent = tokB.toFixed(2) + 'B tok';
+  }, 3000);
+
+  // ── Drifting coordinates ──
+  let lat = 28.5729, lon = 80.6490;
+  setInterval(() => {
+    lat += (Math.random() - 0.5) * 0.0003;
+    lon += (Math.random() - 0.5) * 0.0003;
+    document.getElementById('coord').textContent =
+      'KSC:' + Math.abs(lat).toFixed(4) + '°N ' + Math.abs(lon).toFixed(4) + '°W';
+  }, 3000);
+
+  // ── Highlight selected dossier ──
+  document.querySelectorAll('.dossier').forEach(d => {
+    d.addEventListener('click', () => {
+      document.querySelectorAll('.dossier').forEach(x => {
+        x.style.outline = '';
+        x.style.outlineOffset = '';
+      });
+      d.style.outline = '1px solid #D97E1A';
+      d.style.outlineOffset = '-1px';
+    });
+  });
+
+  // ── Ambient audio (Web Audio API drone) ──
+  let audioCtx = null, nodes = [], playing = false;
+
+  function toggleAudio() {
+    const btn = document.getElementById('audiobtn');
+    if (!playing) {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      // Drone: two detuned oscillators + noise
+      const freqs = [55, 55.3, 110, 82.4];
+      nodes = freqs.map(f => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = f;
+        gain.gain.value = 0.018;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        return { osc, gain };
+      });
+      // Subtle hiss
+      const bufSize = audioCtx.sampleRate * 2;
+      const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * 0.012;
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf; src.loop = true;
+      const hissGain = audioCtx.createGain();
+      hissGain.gain.value = 0.08;
+      src.connect(hissGain);
+      hissGain.connect(audioCtx.destination);
+      src.start();
+      nodes.push({ osc: src, gain: hissGain });
+      playing = true;
+      btn.textContent = '■ AMBIENT';
+      btn.classList.add('active');
+    } else {
+      nodes.forEach(n => { try { n.osc.stop(); } catch(e){} });
+      nodes = []; playing = false;
+      btn.textContent = '▶ AMBIENT';
+      btn.classList.remove('active');
+    }
+  }
+</script>
+
+</body>
+</html>

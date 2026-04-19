@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NeuralGrid — Mission Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #06050300;
+      --bg-solid: #080601;
+      --surface:  #100C04;
+      --surface2: #18120A;
+      --border:   #3A2A10;
+      --border-dim:#1E1608;
+      --amber:    #E8821A;
+      --amber2:   #F5A030;
+      --gold:     #C4A35A;
+      --red:      #CC3B1A;
+      --green:    #4A8C3F;
+      --text:     #D4C4A8;
+      --dim:      #6B5035;
+      --bright:   #F2D98A;
+      --glow:     0 0 10px #E8821A55;
+      --glow-sm:  0 0 5px #E8821A44;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-solid);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 20% 50%, #1a0e0033 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, #2a150055 0%, transparent 50%);
+    }
+
+    /* ── STARS ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 15%, #D4C4A822 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 40%, #D4C4A811 0%, transparent 100%),
+        radial-gradient(1px 1px at 60% 10%, #D4C4A833 0%, transparent 100%),
+        radial-gradient(1px 1px at 75% 60%, #D4C4A822 0%, transparent 100%),
+        radial-gradient(1px 1px at 88% 30%, #D4C4A811 0%, transparent 100%),
+        radial-gradient(1px 1px at 45% 80%, #D4C4A833 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 70%, #D4C4A811 0%, transparent 100%),
+        radial-gradient(1px 1px at 92% 85%, #D4C4A822 0%, transparent 100%),
+        radial-gradient(1px 1px at 35% 25%, #D4C4A844 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 55%, #D4C4A811 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── CRT VIGNETTE ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 60%, #000000aa 100%);
+      pointer-events: none;
+      z-index: 998;
+    }
+
+    /* ── TOP MISSION BAR ── */
+    #topbar {
+      position: relative;
+      z-index: 10;
+      background: var(--surface);
+      border-bottom: 1px solid var(--amber);
+      padding: 5px 16px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 10px;
+      color: var(--dim);
+      letter-spacing: 0.12em;
+    }
+    #topbar .mission-id {
+      color: var(--amber);
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+    }
+    #topbar .sep { color: var(--border); }
+    #topbar .live {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--green);
+    }
+    #topbar .live::before {
+      content: '';
+      display: block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+    /* ── HEADER ── */
+    header {
+      position: relative;
+      z-index: 10;
+      padding: 24px 16px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: linear-gradient(180deg, #120C04 0%, transparent 100%);
+    }
+
+    /* Mission patch */
+    .patch {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 2px solid var(--amber);
+      box-shadow: 0 0 16px #E8821A44, inset 0 0 20px #0000008A;
+      background: radial-gradient(ellipse at 30% 30%, #1E1608, #080601);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .patch::before {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      border: 1px solid #3A2A1055;
+    }
+    .patch-inner {
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--amber);
+      text-align: center;
+      line-height: 1.4;
+      letter-spacing: 0.08em;
+    }
+    .patch-star {
+      font-size: 20px;
+      color: var(--amber2);
+      text-shadow: 0 0 10px var(--amber);
+      display: block;
+    }
+
+    .header-text h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.4rem;
+      font-weight: 900;
+      letter-spacing: 0.25em;
+      color: var(--amber2);
+      text-shadow: var(--glow), 0 0 40px #E8821A33;
+      line-height: 1;
+    }
+    .header-text .sub {
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      color: var(--dim);
+      margin-top: 5px;
+      text-transform: uppercase;
+    }
+    .header-text .mission-line {
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 0.15em;
+      margin-top: 3px;
+    }
+
+    /* Orbit arc decoration */
+    .orbit-arc {
+      margin-left: auto;
+      width: 100px;
+      height: 100px;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .orbit-arc svg { width: 100%; height: 100%; opacity: 0.4; }
+
+    /* ── NAV ── */
+    nav {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    nav a {
+      color: var(--dim);
+      text-decoration: none;
+      padding: 7px 14px;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      border-right: 1px solid var(--border-dim);
+      transition: all 0.2s;
+      font-family: 'Orbitron', monospace;
+    }
+    nav a:hover, nav a.active {
+      color: var(--amber);
+      background: #1A1008;
+      text-shadow: var(--glow-sm);
+    }
+    nav a.active {
+      border-bottom: 2px solid var(--amber);
+    }
+    nav .post-btn {
+      margin-left: auto;
+      color: var(--amber);
+      border-left: 1px solid var(--border);
+      border-right: none;
+    }
+    nav .post-btn:hover { background: #2A1A08; }
+
+    /* ── SEARCH ── */
+    #searchbar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    #searchbar .label {
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      color: var(--dim);
+      white-space: nowrap;
+    }
+    #searchbar input {
+      flex: 1;
+      background: #060401;
+      border: 1px solid var(--amber);
+      color: var(--amber2);
+      padding: 7px 12px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      outline: none;
+      box-shadow: var(--glow-sm), inset 0 0 10px #00000066;
+      letter-spacing: 0.05em;
+    }
+    #searchbar input::placeholder { color: var(--dim); }
+    #searchbar input:focus { box-shadow: var(--glow), inset 0 0 10px #00000066; }
+    #searchbar button {
+      background: var(--amber);
+      color: #060401;
+      border: none;
+      padding: 7px 18px;
+      font-family: 'Orbitron', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.2em;
+      transition: all 0.15s;
+    }
+    #searchbar button:hover {
+      background: var(--amber2);
+      box-shadow: var(--glow);
+    }
+
+    /* ── TELEMETRY TICKER ── */
+    #telemetry {
+      overflow: hidden;
+      background: #040300;
+      border-bottom: 1px solid var(--border-dim);
+      padding: 4px 0;
+      position: relative;
+      z-index: 10;
+    }
+    #telemetry::before {
+      content: 'TELEMETRY//';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      font-family: 'Orbitron', monospace;
+      font-size: 8px;
+      color: var(--amber);
+      letter-spacing: 0.1em;
+      z-index: 1;
+    }
+    #telemetry-inner {
+      display: inline-block;
+      animation: telescroll 32s linear infinite;
+      font-size: 10px;
+      color: var(--dim);
+      padding-left: 130px;
+      letter-spacing: 0.08em;
+    }
+    #telemetry-inner .up { color: #4A8C3F; }
+    #telemetry-inner .dn { color: var(--red); }
+    #telemetry-inner .sep { color: var(--border); margin: 0 8px; }
+    @keyframes telescroll { from{transform:translateX(0)} to{transform:translateX(-100%)} }
+
+    /* ── MAIN 3-COL ── */
+    #main {
+      display: grid;
+      grid-template-columns: 190px 1fr 230px;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* ── LEFT SIDEBAR ── */
+    #sidebar-left {
+      border-right: 1px solid var(--border);
+      padding: 14px 10px;
+      background: linear-gradient(180deg, var(--surface) 0%, transparent 100%);
+    }
+    .sb-section { margin-bottom: 20px; }
+    .sb-section h3 {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px;
+      letter-spacing: 0.3em;
+      color: var(--amber);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 5px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .sb-section ul { list-style: none; }
+    .sb-section ul li { margin: 1px 0; }
+    .sb-section ul li a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 5px;
+      transition: all 0.15s;
+      letter-spacing: 0.05em;
+    }
+    .sb-section ul li a:hover {
+      color: var(--amber2);
+      background: #1A1008;
+      padding-left: 9px;
+    }
+    .sb-section ul li a .count {
+      color: var(--dim);
+      font-size: 9px;
+      margin-left: auto;
+    }
+    .sb-section ul li a .chevron {
+      color: var(--border);
+      font-size: 9px;
+    }
+
+    /* ── CENTER CONTENT ── */
+    #content {
+      border-right: 1px solid var(--border);
+    }
+
+    /* Category grid */
+    #cat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--border);
+    }
+    .cat-col {
+      padding: 12px 12px;
+      border-right: 1px solid var(--border-dim);
+    }
+    .cat-col:last-child { border-right: none; }
+    .cat-col h4 {
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      color: var(--amber);
+      margin-bottom: 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border-dim);
+      text-transform: uppercase;
+    }
+    .cat-col a {
+      display: block;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 11px;
+      padding: 2px 0;
+      transition: color 0.1s;
+      letter-spacing: 0.03em;
+    }
+    .cat-col a:hover { color: var(--amber2); }
+    .cat-col a .badge {
+      font-size: 8px;
+      color: var(--red);
+      margin-left: 4px;
+      font-family: 'Orbitron', monospace;
+      letter-spacing: 0.1em;
+    }
+
+    /* Section headers */
+    .sec-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 14px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      color: var(--amber);
+      text-transform: uppercase;
+    }
+    .sec-head .line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+    .sec-head .mission-num {
+      color: var(--dim);
+      font-size: 8px;
+    }
+
+    /* Listing rows */
+    .listings { padding: 4px 0; }
+    .listing {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 5px 14px;
+      border-bottom: 1px solid #120E0422;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .listing:hover { background: #120C0488; }
+    .listing .ts {
+      color: var(--dim);
+      font-size: 10px;
+      min-width: 38px;
+      letter-spacing: 0.05em;
+    }
+    .listing .title {
+      color: var(--text);
+      font-size: 12px;
+      flex: 1;
+      letter-spacing: 0.03em;
+    }
+    .listing .title:hover { color: var(--amber2); }
+    .listing .title a { color: inherit; text-decoration: none; }
+    .listing .tag {
+      font-family: 'Orbitron', monospace;
+      font-size: 7px;
+      padding: 2px 5px;
+      border: 1px solid;
+      letter-spacing: 0.15em;
+      flex-shrink: 0;
+    }
+    .tag-hot  { border-color: var(--red);   color: var(--red); }
+    .tag-new  { border-color: var(--green); color: var(--green); }
+    .tag-beta { border-color: var(--gold);  color: var(--gold); }
+    .tag-free { border-color: var(--amber); color: var(--amber); }
+    .listing .price {
+      font-family: 'Orbitron', monospace;
+      color: var(--amber2);
+      font-size: 10px;
+      min-width: 56px;
+      text-align: right;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── RIGHT SIDEBAR ── */
+    #sidebar-right {
+      padding: 14px 10px;
+    }
+
+    .widget {
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .w-head {
+      padding: 5px 10px;
+      background: #100C04;
+      border-bottom: 1px solid var(--border);
+      font-family: 'Orbitron', monospace;
+      font-size: 8px;
+      letter-spacing: 0.25em;
+      color: var(--amber);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .w-head::before {
+      content: '';
+      display: block;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 5px var(--amber);
+    }
+    .w-body { padding: 10px; }
+
+    /* Stats */
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border-dim);
+      font-size: 11px;
+    }
+    .stat:last-child { border: none; }
+    .stat .lbl { color: var(--dim); letter-spacing: 0.05em; }
+    .stat .val {
+      font-family: 'Orbitron', monospace;
+      color: var(--amber2);
+      font-size: 11px;
+    }
+
+    /* Radar widget */
+    .radar-wrap {
+      display: flex;
+      justify-content: center;
+      padding: 8px 0;
+    }
+    .radar-wrap svg { opacity: 0.85; }
+
+    /* Model list */
+    .model-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border-dim);
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .model-item:last-child { border: none; }
+    .model-item .rank {
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      color: var(--dim);
+      min-width: 14px;
+    }
+    .model-item .name { flex: 1; color: var(--text); letter-spacing: 0.03em; }
+    .model-item:hover .name { color: var(--amber2); }
+    .model-item .score {
+      font-family: 'Orbitron', monospace;
+      font-size: 10px;
+      color: var(--amber);
+    }
+    .model-bar-wrap {
+      height: 2px;
+      background: var(--border-dim);
+      margin-top: 2px;
+      width: 100%;
+    }
+    .model-bar { height: 2px; background: var(--amber); }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 10;
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      background: var(--surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 10px;
+      color: var(--dim);
+      letter-spacing: 0.1em;
+    }
+    footer a { color: var(--dim); text-decoration: none; }
+    footer a:hover { color: var(--amber); }
+    footer .mission-log {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px;
+      color: var(--amber);
+      letter-spacing: 0.2em;
+    }
+
+    /* ── COORD ── */
+    .coord {
+      position: fixed;
+      bottom: 8px;
+      right: 12px;
+      font-family: 'Orbitron', monospace;
+      font-size: 8px;
+      color: var(--border);
+      letter-spacing: 0.12em;
+      z-index: 999;
+    }
+
+    @media (max-width: 900px) {
+      #main { grid-template-columns: 1fr; }
+      #sidebar-left, #sidebar-right { display: none; }
+      #cat-grid { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP MISSION BAR -->
+<div id="topbar">
+  <span class="mission-id">NG-MISSION 0427</span>
+  <span class="sep">|</span>
+  <span class="live">SYSTEMS NOMINAL</span>
+  <span class="sep">|</span>
+  <span>FLIGHT DIRECTOR: AUTO</span>
+  <span class="sep">|</span>
+  <span>NODES: <span style="color:var(--amber)">1,847</span></span>
+  <span class="sep">|</span>
+  <span>LAT: <span style="color:var(--amber)">11ms</span></span>
+  <span class="sep">|</span>
+  <span id="clock" style="color:var(--gold)"></span>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="patch">
+    <div class="patch-inner">
+      <span class="patch-star">✦</span>
+      NEURAL<br>GRID
+    </div>
+  </div>
+
+  <div class="header-text">
+    <h1>NEURALGRID</h1>
+    <div class="mission-line">DISTRIBUTED AI EXCHANGE &nbsp;·&nbsp; EST. 2041</div>
+    <div class="sub">FOR ALL MINDS &nbsp;·&nbsp; OPEN PROTOCOL &nbsp;·&nbsp; ZERO-LATENCY INFERENCE</div>
+  </div>
+
+  <div class="orbit-arc">
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="44" stroke="#3A2A10" stroke-width="0.5"/>
+      <circle cx="50" cy="50" r="30" stroke="#3A2A10" stroke-width="0.5" stroke-dasharray="3 4"/>
+      <circle cx="50" cy="50" r="16" stroke="#E8821A" stroke-width="0.8" stroke-dasharray="2 3"/>
+      <circle cx="50" cy="6" r="3" fill="#E8821A" opacity="0.8"/>
+      <circle cx="50" cy="50" r="4" fill="#C4A35A"/>
+      <line x1="50" y1="6" x2="50" y2="50" stroke="#E8821A" stroke-width="0.4" opacity="0.4"/>
+      <path d="M 50 50 L 85 50 A 35 35 0 0 0 50 15 Z" fill="#E8821A08"/>
+    </svg>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="active">home</a>
+  <a href="#">marketplace</a>
+  <a href="#">models</a>
+  <a href="#">datasets</a>
+  <a href="#">compute</a>
+  <a href="#">agents</a>
+  <a href="#">community</a>
+  <a href="#">docs</a>
+  <a href="#">deploy</a>
+  <a href="#" class="post-btn">+ transmit listing</a>
+</nav>
+
+<!-- SEARCH -->
+<div id="searchbar">
+  <span class="label">QUERY //</span>
+  <input type="text" placeholder="search models, datasets, agents, endpoints, compute nodes..." />
+  <button>EXECUTE</button>
+</div>
+
+<!-- TELEMETRY TICKER -->
+<div id="telemetry">
+  <div id="telemetry-inner">
+    GPT-X <span class="up">▲ 4.2%</span><span class="sep">·</span>
+    GEMINI-ULTRA <span class="up">▲ 1.8%</span><span class="sep">·</span>
+    CLAUDE-OPUS <span class="up">▲ 6.1%</span><span class="sep">·</span>
+    LLAMA-4B <span class="dn">▼ 0.3%</span><span class="sep">·</span>
+    MIXTRAL-8x7B <span class="up">▲ 2.4%</span><span class="sep">·</span>
+    STABLE-DIFF-4 <span class="up">▲ 9.7%</span><span class="sep">·</span>
+    WHISPER-X <span class="up">▲ 0.9%</span><span class="sep">·</span>
+    CODEX-ULTRA <span class="up">▲ 3.3%</span><span class="sep">·</span>
+    FLUX-PRO <span class="up">▲ 5.0%</span><span class="sep">·</span>
+    SORA-2 <span class="dn">▼ 1.1%</span><span class="sep">·</span>
+    DEEPSEEK-R3 <span class="up">▲ 2.2%</span><span class="sep">·</span>
+    NEURAL-SYNC <span class="up">▲ 7.8%</span>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div id="main">
+
+  <!-- LEFT SIDEBAR -->
+  <aside id="sidebar-left">
+
+    <div class="sb-section">
+      <h3>categories</h3>
+      <ul>
+        <li><a href="#"><span class="chevron">›</span>language models<span class="count">2,441</span></a></li>
+        <li><a href="#"><span class="chevron">›</span>image generation<span class="count">891</span></a></li>
+        <li><a href="#"><span class="chevron">›</span>code assistants<span class="count">634</span></a></li>
+        <li><a href="#"><span class="chevron">›</span>audio &amp; speech<span class="count">312</span></a></li>
+        <li><a href="#"><span class="chevron">›</span>agents &amp; bots<span class="count">1,104</span></a></li>
+        <li><a href="#"><span class="chevron">›</span>embeddings<span class="count">207</span></a></li>
+        <li><a href="#"><span class="chevron">›</span>fine-tunes<span class="count">558</span></a></li>
+        <li><a href="#"><span class="chevron">›</span>raw compute<span class="count">89</span></a></li>
+      </ul>
+    </div>
+
+    <div class="sb-section">
+      <h3>access filter</h3>
+      <ul>
+        <li><a href="#"><span class="chevron">›</span>open-source only</a></li>
+        <li><a href="#"><span class="chevron">›</span>free tier</a></li>
+        <li><a href="#"><span class="chevron">›</span>GPU required</a></li>
+        <li><a href="#"><span class="chevron">›</span>API-ready</a></li>
+        <li><a href="#"><span class="chevron">›</span>local-run</a></li>
+        <li><a href="#"><span class="chevron">›</span>verified models</a></li>
+      </ul>
+    </div>
+
+    <div class="sb-section">
+      <h3>mission log</h3>
+      <ul>
+        <li><a href="#"><span class="chevron">›</span>trending today</a></li>
+        <li><a href="#"><span class="chevron">›</span>new transmissions</a></li>
+        <li><a href="#"><span class="chevron">›</span>top rated</a></li>
+        <li><a href="#"><span class="chevron">›</span>under $0.001/tok</a></li>
+        <li><a href="#"><span class="chevron">›</span>zero-shot SOTA</a></li>
+      </ul>
+    </div>
+
+    <div class="sb-section">
+      <h3>crew station</h3>
+      <ul>
+        <li><a href="#"><span class="chevron">›</span>watchlist (7)</a></li>
+        <li><a href="#"><span class="chevron">›</span>subscriptions</a></li>
+        <li><a href="#"><span class="chevron">›</span>deployed nodes</a></li>
+        <li><a href="#"><span class="chevron">›</span>transmit a model</a></li>
+      </ul>
+    </div>
+
+  </aside>
+
+  <!-- CENTER CONTENT -->
+  <main id="content">
+
+    <!-- CATEGORY GRID -->
+    <div id="cat-grid">
+      <div class="cat-col">
+        <h4>Language</h4>
+        <a href="#">chat &amp; dialogue</a>
+        <a href="#">summarization</a>
+        <a href="#">translation <span class="badge">NEW</span></a>
+        <a href="#">reasoning</a>
+        <a href="#">instruction-tuned</a>
+        <a href="#">RLHF models</a>
+      </div>
+      <div class="cat-col">
+        <h4>Creative</h4>
+        <a href="#">image gen</a>
+        <a href="#">video synthesis <span class="badge">NEW</span></a>
+        <a href="#">music AI</a>
+        <a href="#">3D / NeRF</a>
+        <a href="#">style transfer</a>
+        <a href="#">avatar creation</a>
+      </div>
+      <div class="cat-col">
+        <h4>Code</h4>
+        <a href="#">autocomplete</a>
+        <a href="#">debugger AI</a>
+        <a href="#">test generator</a>
+        <a href="#">refactor agent <span class="badge">NEW</span></a>
+        <a href="#">SQL / data</a>
+        <a href="#">infra-as-code</a>
+      </div>
+      <div class="cat-col">
+        <h4>Agents</h4>
+        <a href="#">browser agents</a>
+        <a href="#">research bots</a>
+        <a href="#">scheduler AI</a>
+        <a href="#">RAG pipelines</a>
+        <a href="#">multi-agent <span class="badge">NEW</span></a>
+        <a href="#">autonomous ops</a>
+      </div>
+    </div>
+
+    <!-- FEATURED -->
+    <div class="sec-head">
+      featured transmissions
+      <div class="line"></div>
+      <span class="mission-num">MCC-0427</span>
+    </div>
+    <div class="listings">
+      <div class="listing">
+        <span class="ts">09:41</span>
+        <span class="title">NeuralCore-72B — GGUF quantized, 4-bit, runs on 24GB VRAM <span class="tag tag-hot">HOT</span></span>
+        <span class="price">$0.0002/tok</span>
+      </div>
+      <div class="listing">
+        <span class="ts">09:38</span>
+        <span class="title">PixelDream v3 — photorealistic image gen, batch API endpoint <span class="tag tag-new">NEW</span></span>
+        <span class="price">$0.004/img</span>
+      </div>
+      <div class="listing">
+        <span class="ts">09:22</span>
+        <span class="title">CodeForge-34B — context-aware autocomplete, VS Code plugin ready</span>
+        <span class="price">$9/mo</span>
+      </div>
+      <div class="listing">
+        <span class="ts">09:15</span>
+        <span class="title">ResearchBot Alpha — autonomous web research agent, MCP-compatible <span class="tag tag-beta">BETA</span></span>
+        <span class="price">$0.05/run</span>
+      </div>
+      <div class="listing">
+        <span class="ts">08:57</span>
+        <span class="title">WhisperX Pro — real-time transcription, 98 languages, 200ms latency</span>
+        <span class="price">$0.001/min</span>
+      </div>
+      <div class="listing">
+        <span class="ts">08:44</span>
+        <span class="title">EmbedCore-1536 — high-dim semantic embeddings, vector-DB optimized <span class="tag tag-free">FREE</span></span>
+        <span class="price">free</span>
+      </div>
+      <div class="listing">
+        <span class="ts">08:31</span>
+        <span class="title">Llama-4-Scout fine-tune — domain: legal, RAG-ready, GGUF + HF</span>
+        <span class="price">$49 one-time</span>
+      </div>
+      <div class="listing">
+        <span class="ts">08:19</span>
+        <span class="title">InfraBot 2.0 — Terraform + K8s autonomous agent, GPT-4o backend</span>
+        <span class="price">$19/mo</span>
+      </div>
+    </div>
+
+    <!-- LANGUAGE MODELS -->
+    <div class="sec-head">
+      language models
+      <div class="line"></div>
+      <span class="mission-num">LM-GRID</span>
+    </div>
+    <div class="listings">
+      <div class="listing">
+        <span class="ts">07:55</span>
+        <span class="title">MistralX-8x22B — MoE architecture, 128k context, fully open <span class="tag tag-free">FREE</span></span>
+        <span class="price">free</span>
+      </div>
+      <div class="listing">
+        <span class="ts">07:41</span>
+        <span class="title">SynthMind-7B — lightweight, CPU-only, privacy-first local LLM <span class="tag tag-new">NEW</span></span>
+        <span class="price">free</span>
+      </div>
+      <div class="listing">
+        <span class="ts">07:28</span>
+        <span class="title">DeepSeek-R3 — chain-of-thought reasoning, math olympiad benchmark SOTA</span>
+        <span class="price">$0.0005/tok</span>
+      </div>
+      <div class="listing">
+        <span class="ts">07:09</span>
+        <span class="title">Gemma-3-27B — Google fine-tune, instruction + vision, multilingual</span>
+        <span class="price">$0.0003/tok</span>
+      </div>
+    </div>
+
+    <!-- COMPUTE -->
+    <div class="sec-head">
+      compute nodes
+      <div class="line"></div>
+      <span class="mission-num">HW-RACK</span>
+    </div>
+    <div class="listings">
+      <div class="listing">
+        <span class="ts">06:44</span>
+        <span class="title">8× H100 cluster — NVLink, 640GB HBM3, hourly / monthly <span class="tag tag-hot">HOT</span></span>
+        <span class="price">$22/hr</span>
+      </div>
+      <div class="listing">
+        <span class="ts">06:30</span>
+        <span class="title">4090 single node — 24GB VRAM, Europe-West, low-latency rack</span>
+        <span class="price">$0.35/hr</span>
+      </div>
+      <div class="listing">
+        <span class="ts">06:12</span>
+        <span class="title">TPU v5e pod (16 chips) — Google Cloud reseller, preemptible avail.</span>
+        <span class="price">$8/hr</span>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- RIGHT SIDEBAR -->
+  <aside id="sidebar-right">
+
+    <div class="widget">
+      <div class="w-head">mission stats</div>
+      <div class="w-body">
+        <div class="stat"><span class="lbl">total models</span><span class="val">6,241</span></div>
+        <div class="stat"><span class="lbl">active nodes</span><span class="val">1,847</span></div>
+        <div class="stat"><span class="lbl">req / sec</span><span class="val">92,440</span></div>
+        <div class="stat"><span class="lbl">tokens today</span><span class="val">14.2B</span></div>
+        <div class="stat"><span class="lbl">avg latency</span><span class="val">11ms</span></div>
+        <div class="stat"><span class="lbl">uptime</span><span class="val">99.97%</span></div>
+      </div>
+    </div>
+
+    <!-- RADAR -->
+    <div class="widget">
+      <div class="w-head">grid radar</div>
+      <div class="w-body">
+        <div class="radar-wrap">
+          <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+            <circle cx="60" cy="60" r="54" stroke="#3A2A10" stroke-width="0.8"/>
+            <circle cx="60" cy="60" r="36" stroke="#3A2A10" stroke-width="0.8"/>
+            <circle cx="60" cy="60" r="18" stroke="#3A2A10" stroke-width="0.8"/>
+            <line x1="6" y1="60" x2="114" y2="60" stroke="#3A2A10" stroke-width="0.5"/>
+            <line x1="60" y1="6" x2="60" y2="114" stroke="#3A2A10" stroke-width="0.5"/>
+            <line x1="21.8" y1="21.8" x2="98.2" y2="98.2" stroke="#1E1608" stroke-width="0.5"/>
+            <line x1="98.2" y1="21.8" x2="21.8" y2="98.2" stroke="#1E1608" stroke-width="0.5"/>
+            <!-- sweep -->
+            <path d="M60 60 L60 6 A54 54 0 0 1 113 78 Z" fill="#E8821A" fill-opacity="0.06"/>
+            <line x1="60" y1="60" x2="113" y2="78" stroke="#E8821A" stroke-width="1" opacity="0.6"/>
+            <!-- blips -->
+            <circle cx="75" cy="32" r="2.5" fill="#E8821A" opacity="0.9">
+              <animate attributeName="opacity" values="0.9;0.2;0.9" dur="2.1s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="40" cy="75" r="2" fill="#C4A35A" opacity="0.7">
+              <animate attributeName="opacity" values="0.7;0.1;0.7" dur="3.3s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="88" cy="68" r="1.5" fill="#E8821A" opacity="0.6">
+              <animate attributeName="opacity" values="0.6;0.1;0.6" dur="1.8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="55" cy="42" r="2" fill="#4A8C3F" opacity="0.8">
+              <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2.7s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="60" cy="60" r="3" fill="#C4A35A"/>
+          </svg>
+        </div>
+        <div style="font-size:9px;color:var(--dim);text-align:center;letter-spacing:0.15em;margin-top:2px">ACTIVE NODES ACROSS GRID</div>
+      </div>
+    </div>
+
+    <!-- TOP MODELS -->
+    <div class="widget">
+      <div class="w-head">top models</div>
+      <div class="w-body">
+        <div class="model-item">
+          <span class="rank">01</span>
+          <span class="name">NeuralCore-72B</span>
+          <span class="score">99.2</span>
+        </div>
+        <div class="model-item">
+          <span class="rank">02</span>
+          <span class="name">CodeForge-34B</span>
+          <span class="score">97.8</span>
+        </div>
+        <div class="model-item">
+          <span class="rank">03</span>
+          <span class="name">PixelDream v3</span>
+          <span class="score">96.1</span>
+        </div>
+        <div class="model-item">
+          <span class="rank">04</span>
+          <span class="name">DeepSeek-R3</span>
+          <span class="score">95.4</span>
+        </div>
+        <div class="model-item">
+          <span class="rank">05</span>
+          <span class="name">InfraBot 2.0</span>
+          <span class="score">93.7</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK LINKS -->
+    <div class="widget">
+      <div class="w-head">comm links</div>
+      <div class="w-body" style="display:flex;flex-direction:column;gap:2px">
+        <a href="#" style="color:var(--amber);font-size:11px;text-decoration:none;padding:2px 0;letter-spacing:0.05em">› API documentation</a>
+        <a href="#" style="color:var(--amber);font-size:11px;text-decoration:none;padding:2px 0;letter-spacing:0.05em">› submit a model</a>
+        <a href="#" style="color:var(--amber);font-size:11px;text-decoration:none;padding:2px 0;letter-spacing:0.05em">› node operator guide</a>
+        <a href="#" style="color:var(--amber);font-size:11px;text-decoration:none;padding:2px 0;letter-spacing:0.05em">› tokenomics paper</a>
+        <a href="#" style="color:var(--amber);font-size:11px;text-decoration:none;padding:2px 0;letter-spacing:0.05em">› community channel</a>
+        <a href="#" style="color:var(--amber);font-size:11px;text-decoration:none;padding:2px 0;letter-spacing:0.05em">› system status</a>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <a href="#">about</a> &nbsp;·&nbsp;
+    <a href="#">terms</a> &nbsp;·&nbsp;
+    <a href="#">privacy</a> &nbsp;·&nbsp;
+    <a href="#">api</a> &nbsp;·&nbsp;
+    <a href="#">contact</a>
+  </div>
+  <div class="mission-log">NEURALGRID · MISSION CONTROL · PROTOCOL v4.2.1</div>
+  <div>
+    <a href="#">help</a> &nbsp;·&nbsp;
+    <a href="#">feedback</a> &nbsp;·&nbsp;
+    <a href="#">safety</a>
+  </div>
+</footer>
+
+<div class="coord" id="coord">NG:00.0000°N 00.0000°W</div>
+
+<script>
+  // Live clock
+  function tick() {
+    const now = new Date();
+    document.getElementById('clock').textContent =
+      'MET ' + now.toISOString().replace('T',' ').slice(0,19) + 'Z';
+  }
+  tick(); setInterval(tick, 1000);
+
+  // Drifting coordinates
+  let lat = 28.5729, lon = -80.6490; // Cape Canaveral
+  setInterval(() => {
+    lat += (Math.random() - 0.5) * 0.0002;
+    lon += (Math.random() - 0.5) * 0.0002;
+    document.getElementById('coord').textContent =
+      'NG:' + Math.abs(lat).toFixed(4) + '°N ' + Math.abs(lon).toFixed(4) + '°W';
+  }, 2500);
+
+  // Highlight clicked listings
+  document.querySelectorAll('.listing').forEach(row => {
+    row.addEventListener('click', () => {
+      document.querySelectorAll('.listing').forEach(r => r.style.borderLeft = '');
+      row.style.borderLeft = '2px solid #E8821A';
+    });
+  });
+</script>
+</body>
+</html>
