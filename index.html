@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Neural Grid</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: monospace;
+      background: #0a0a0a;
+      color: #ccc;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid #222;
+    }
+
+    .logo {
+      color: #ff8c00;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .cta-btn {
+      background: transparent;
+      border: 1px solid #ff8c00;
+      color: #ff8c00;
+      padding: 8px 14px;
+      cursor: pointer;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .hero h1 {
+      color: #ff8c00;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      color: #777;
+      font-size: 14px;
+    }
+
+    .search-box {
+      margin-top: 20px;
+    }
+
+    input {
+      width: 60%;
+      padding: 12px;
+      background: #111;
+      border: 1px solid #333;
+      color: #ccc;
+    }
+
+    button.search {
+      padding: 12px 16px;
+      background: #ff8c00;
+      border: none;
+      cursor: pointer;
+    }
+
+    .filters {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .filter {
+      padding: 6px 12px;
+      border: 1px solid #333;
+      cursor: pointer;
+    }
+
+    .filter.active {
+      border-color: #ff8c00;
+      color: #ff8c00;
+    }
+
+    .feed {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .item {
+      border-bottom: 1px solid #222;
+      padding: 14px 0;
+    }
+
+    .item-title {
+      color: #ff8c00;
+    }
+
+    .item-desc {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .item-meta {
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .tag {
+      border: 1px solid #444;
+      padding: 2px 6px;
+      margin-left: 6px;
+      font-size: 11px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">NEURAL GRID</div>
+  <button class="cta-btn">Publish</button>
+</header>
+
+<section class="hero">
+  <h1>AI Models, Datasets & Compute</h1>
+  <p>Discover and deploy AI resources instantly</p>
+
+  <div class="search-box">
+    <input type="text" placeholder="Search models, datasets, agents..." />
+    <button class="search">Search</button>
+  </div>
+</section>
+
+<div class="filters">
+  <div class="filter active">All</div>
+  <div class="filter">Models</div>
+  <div class="filter">Datasets</div>
+  <div class="filter">Agents</div>
+  <div class="filter">Compute</div>
+</div>
+
+<section class="feed">
+
+  <div class="item">
+    <div class="item-title">NeuralCore-72B</div>
+    <div class="item-desc">High-performance language model with 24GB VRAM support</div>
+    <div class="item-meta">$0.002/token <span class="tag">HOT</span></div>
+  </div>
+
+  <div class="item">
+    <div class="item-title">PixelDream v3</div>
+    <div class="item-desc">Photorealistic image generation API</div>
+    <div class="item-meta">$0.004/image <span class="tag">NEW</span></div>
+  </div>
+
+  <div class="item">
+    <div class="item-title">ResearchBot Alpha</div>
+    <div class="item-desc">Autonomous research agent with web capabilities</div>
+    <div class="item-meta">$0.05/run <span class="tag">BETA</span></div>
+  </div>
+
+</section>
+
+</body>
+</html>
