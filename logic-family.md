@@ -1,4 +1,4 @@
-##Reasoning Tools in Mathematics
+## Reasoning Tools in Mathematics
 A more complete map of reasoning tools:
 1. Formal Logic (rules of valid inference)
 	•	Propositional logic
