@@ -2,31 +2,31 @@
 A more complete map of reasoning tools:
 1. ### Formal Logic (rules of valid inference)
 	- Propositional logic
-	- 	Predicate logic (first-order, higher-order)
+	- Predicate logic (first-order, higher-order)
 	- Modal logic (possibility, necessity, knowledge, time)
 	- Fuzzy logic (degrees of truth)
 	- Non-classical logics (intuitionistic, paraconsistent)
-2. Mathematics (structure and quantity)
-	•	Algebra (linear, abstract, Boolean)
-	•	Calculus (differential, integral, vector)
-	•	Geometry & topology
-	•	Number theory
-	•	Discrete mathematics (combinatorics, graph theory)
+2. ### Mathematics (structure and quantity)
+    - Algebra (linear, abstract, Boolean)
+	- Calculus (differential, integral, vector)
+	- Geometry & topology
+	- Number theory
+	- Discrete mathematics (combinatorics, graph theory)
 3. Probabilistic & Statistical Reasoning (uncertainty)
-	•	Probability theory
-	•	Statistics (frequentist, Bayesian)
-	•	Information theory (entropy, mutual information)
-	•	Decision theory (choices under uncertainty)
+   - Probability theory
+   - Statistics (frequentist, Bayesian)
+   - Information theory (entropy, mutual information)
+   - Decision theory (choices under uncertainty)
 4. Computational Reasoning (algorithms and complexity)
-	•	Algorithms & data structures
-	•	Complexity theory (what’s solvable, how efficiently)
-	•	Computability theory (what’s solvable at all)
-	•	Type theory
+    • lgorithms & data structures
+	• Complexity theory (what’s solvable, how efficiently)
+	• Computability theory (what’s solvable at all)
+	• Type theory
 5. Scientific Reasoning (empirical methods)
-	•	Hypothesis formation & falsification
-	•	Experimental design
-	•	Causal inference (correlation ≠ causation, confounders)
-	•	Model building & validation
+    • Hypothesis formation & falsification
+    • Experimental design
+    •.Causal inference (correlation ≠ causation, confounders)
+    • Model building & validation
 6. Analogical & Conceptual Reasoning
 	•	Analogy (mapping structure from known to unknown)
 	•	Abstraction (extracting general patterns)
