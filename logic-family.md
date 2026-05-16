@@ -1,11 +1,11 @@
 ## Reasoning Tools in Mathematics
 A more complete map of reasoning tools:
-1. Formal Logic (rules of valid inference)
-	•	Propositional logic
-	•	Predicate logic (first-order, higher-order)
-	•	Modal logic (possibility, necessity, knowledge, time)
-	•	Fuzzy logic (degrees of truth)
-	•	Non-classical logics (intuitionistic, paraconsistent)
+1. ### Formal Logic (rules of valid inference)
+	- Propositional logic
+	- 	Predicate logic (first-order, higher-order)
+	- Modal logic (possibility, necessity, knowledge, time)
+	- Fuzzy logic (degrees of truth)
+	- Non-classical logics (intuitionistic, paraconsistent)
 2. Mathematics (structure and quantity)
 	•	Algebra (linear, abstract, Boolean)
 	•	Calculus (differential, integral, vector)
