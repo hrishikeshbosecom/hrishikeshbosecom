@@ -1,0 +1,14 @@
+artifact_uri: file:///home/strings/hrishikeshbosecom/courses/greatlearning/model-deployment-healthkart/mlruns/387687143980731387/a1fece35de664089966173ee22a0c4e8/artifacts
+end_time: 1794682488216
+entry_point_name: ''
+experiment_id: '387687143980731387'
+lifecycle_stage: active
+run_id: a1fece35de664089966173ee22a0c4e8
+run_name: XGBoost-combo-09
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1794682488189
+status: 3
+tags: []
+user_id: strings

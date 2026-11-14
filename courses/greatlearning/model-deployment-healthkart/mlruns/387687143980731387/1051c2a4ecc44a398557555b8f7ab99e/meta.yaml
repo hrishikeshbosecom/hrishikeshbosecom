@@ -1,0 +1,14 @@
+artifact_uri: file:///home/strings/hrishikeshbosecom/courses/greatlearning/model-deployment-healthkart/mlruns/387687143980731387/1051c2a4ecc44a398557555b8f7ab99e/artifacts
+end_time: 1794682478256
+entry_point_name: ''
+experiment_id: '387687143980731387'
+lifecycle_stage: active
+run_id: 1051c2a4ecc44a398557555b8f7ab99e
+run_name: RandomForest-combo-04
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1794682478230
+status: 3
+tags: []
+user_id: strings
